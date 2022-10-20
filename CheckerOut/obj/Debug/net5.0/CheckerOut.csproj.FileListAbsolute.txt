@@ -1,0 +1,16 @@
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\CheckerOut.exe
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\CheckerOut.deps.json
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\CheckerOut.runtimeconfig.json
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\CheckerOut.runtimeconfig.dev.json
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\CheckerOut.dll
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\ref\CheckerOut.dll
+D:\FEFU\C#\Tester\CheckerOut\bin\Debug\net5.0\CheckerOut.pdb
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.csproj.AssemblyReference.cache
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.GeneratedMSBuildEditorConfig.editorconfig
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.AssemblyInfoInputs.cache
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.AssemblyInfo.cs
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.csproj.CoreCompileInputs.cache
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.dll
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\ref\CheckerOut.dll
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.pdb
+D:\FEFU\C#\Tester\CheckerOut\obj\Debug\net5.0\CheckerOut.genruntimeconfig.cache

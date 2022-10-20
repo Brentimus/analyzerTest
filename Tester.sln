@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{90690A29-F5D8-452C-B741-CCEB80592E1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckerOut", "CheckerOut\CheckerOut.csproj", "{7941966D-4015-4D9C-9922-23CE478560F4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90690A29-F5D8-452C-B741-CCEB80592E1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90690A29-F5D8-452C-B741-CCEB80592E1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90690A29-F5D8-452C-B741-CCEB80592E1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90690A29-F5D8-452C-B741-CCEB80592E1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7941966D-4015-4D9C-9922-23CE478560F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7941966D-4015-4D9C-9922-23CE478560F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7941966D-4015-4D9C-9922-23CE478560F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7941966D-4015-4D9C-9922-23CE478560F4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
