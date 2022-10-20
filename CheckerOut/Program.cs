@@ -7,7 +7,7 @@ namespace CheckerOut
     {
         static void Main(string[] args)
         {
-            using (StreamReader readtext = new StreamReader("D:/FEFU/C#/Tester/Tester/bin/Debug/net5.0/01.out"))
+            using (StreamReader readtext = new StreamReader("D:/FEFU/C#/Tester/01.out"))
             {
                 string readText = readtext.ReadLine();
                 if (readText == "1 1 Integer 1 1")

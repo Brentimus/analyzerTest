@@ -7,10 +7,10 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            using(StreamReader readtext = new StreamReader("01.in"))
+            using(StreamReader readtext = new StreamReader("D:/FEFU/C#/Tester/01.in"))
             {
                 string readText = readtext.ReadLine();
-                using(StreamWriter writetext = new StreamWriter("01.out"))
+                using(StreamWriter writetext = new StreamWriter("D:/FEFU/C#/Tester/01.out"))
                 {
                     if (readText == "1")
                     {
