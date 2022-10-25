@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{90690A29-F5D8-452C-B741-CCEB80592E1E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lexer", "Lexer\Lexer.csproj", "{90690A29-F5D8-452C-B741-CCEB80592E1E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckerOut", "CheckerOut\CheckerOut.csproj", "{7941966D-4015-4D9C-9922-23CE478560F4}"
 EndProject
