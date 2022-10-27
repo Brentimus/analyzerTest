@@ -194,6 +194,5 @@ class Program
                 Console.Write("id: " + lex.Id + " lex: " + lex.Lexeme + " val: " + lex.Value + Environment.NewLine);
             }
         }
-        //Console.Write("asd");
     }
 }
