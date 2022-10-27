@@ -1,27 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using Lexer;
 
 public class Lexic
     {
-        private string buf = "";
-        private char[] sm = new char[1];
-        private string[] Words = {"and", "end", "nil", "set", "array", "file", "not", "then", "begin", "for", "of", "to", "case", "function", "or", "type", "const", "goto", "packed", "until", "div", "if", "procedure", "var", "do", "in", "program", "while", "downto", "label", "record", "with", "else", "mod", "repeat", "AND", "END", "NIL", "SET", "ARRAY", "FILE", "NOT", "THEN", "BEGIN", "FOR", "OF", "TO", "CASE", "FUNCTION", "OR", "TYPE", "CONST", "GOTO", "PACKED", "UNTIL", "DIV", "IF", "PROCEDURE", "VAR", "DO", "IN", "PROGRAM", "WHILE", "DOWNTO", "LABEL", "RECORD", "WITH", "ELSE", "MOD", "REPEAT"};
-        private string[] Delimiter = { ".", ";", ",", "(", ")", "+", "-", "*", "/", "=", ">", "<" };
-        private int dt = 0;
-        private enum States { S, NUM, DLM, FIN, ID, ER, ASGN, COM }
-        private States _state;
-        
-        public readonly List<Lex> Lexemes = new List<Lex>();
-        private string[] TID = { "" };
-        private string[] TNUM = { "" };
-        private StringReader sr;
+        string buf = "";
+        char[] sm = new char[1];
+        string[] Words = {"and", "end", "nil", "set", "array", "file", "not", "then", "begin", "for", "of", "to", "case", "function", "or", "type", "const", "goto", "packed", "until", "div", "if", "procedure", "var", "do", "in", "program", "while", "downto", "label", "record", "with", "else", "mod", "repeat", "AND", "END", "NIL", "SET", "ARRAY", "FILE", "NOT", "THEN", "BEGIN", "FOR", "OF", "TO", "CASE", "FUNCTION", "OR", "TYPE", "CONST", "GOTO", "PACKED", "UNTIL", "DIV", "IF", "PROCEDURE", "VAR", "DO", "IN", "PROGRAM", "WHILE", "DOWNTO", "LABEL", "RECORD", "WITH", "ELSE", "MOD", "REPEAT"};
+        string[] Delimiter = { ".", ";", ",", "(", ")", "+", "-", "*", "/", "=", ">", "<" };
+        int dt = 0;
+        enum States { S, NUM, DLM, FIN, ID, ER, ASGN, COM, OPR}
+        States _state;
+
+        public List<Lex> Lexemes = new List<Lex>();
+        string[] TID = { "" };
+        string[] TNUM = { "" };
+        StringReader sr;
+        int line = 0;
+        int column = 0;
 
         private void GetNext()
         {
             sr.Read(sm, 0, 1);
+            line++;
         }
 
         private void ClearBuf()
@@ -64,7 +66,6 @@ public class Lexic
             {
                 switch (_state)
                 {
-
                     case States.S:
                         if (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r')
                             GetNext();
@@ -98,6 +99,13 @@ public class Lexic
                         {
                             AddLex(Lexemes, 2, 0, sm[0].ToString());
                             _state = States.FIN;
+                        }
+                        else if (sm[0] == '+' || sm[0] == '-' || sm[0] == '/' || sm[0] == '*' )
+                        {
+                            _state = States.OPR;
+                            ClearBuf();
+                            AddBuf(sm[0]);
+                            GetNext();
                         }
                         else
                         {
@@ -154,26 +162,37 @@ public class Lexic
                         else
                             _state = States.ER;
                         break;
+                    
                     case States.ASGN:
                         if (sm[0] == '=')
                         {
                             AddBuf(sm[0]);
-                            AddLex(Lexemes, 2, 4, buf);
+                            AddLex(Lexemes, 5, 4, buf);
                             ClearBuf();
                             GetNext();
                         }
                         else
-                            AddLex(Lexemes, 2, 3, buf);
+                            AddLex(Lexemes, 5, 3, buf);
+                        _state = States.S;
+                        break;
+                        
+                    case States.OPR:
+                        if (sm[0] == '=')
+                        {
+                            AddBuf(sm[0]);
+                            AddLex(Lexemes, 5, 4, buf);
+                            ClearBuf();
+                            GetNext();
+                        }
+                        else
+                            AddLex(Lexemes, 5, 3, buf);
                         _state = States.S;
 
                         break;
                     case States.ER:
-                        Console.Write("Ошибка в программе");
+                        Console.Write("Error");
                         _state = States.FIN;
-                        break;
-                    case States.FIN:
-                        Console.Write("Лексический анализ закончен");
-                        break;
+                        return;
                 }
 
             }
@@ -195,20 +214,23 @@ class Program
                 switch(lex.Id)
                 {
                     case 1:
-                        Console.Write("служебный: " + lex.Value + " val: " + '\n');
+                        Console.WriteLine("служебный" + '\t' + lex.Value);
                         break;
                     case 2:
-                        Console.Write("ограничитель: " + lex.Value + " val: " + '\n');
+                        Console.WriteLine("ограничитель"+ '\t' + lex.Value);
                         break;
                     case 3:
-                        Console.Write("число: "+ " lex: " + lex.Value + " val: " + '\n');
+                        Console.WriteLine("число" + '\t' + '\t' + lex.Value);
                         break;
                     case 4:
-                        Console.Write("идентификатор: "+ lex.Value + " val: " + '\n');
+                        Console.WriteLine("идентификатор"+ '\t'+ lex.Value);
+                        break;
+                    case 5:
+                        Console.WriteLine("оператор"+ '\t'+ lex.Value);
                         break;
                 }
-                        
             }
+            Console.Write("конец файла"+ '\t' +"Eof");
         }
     }
 }

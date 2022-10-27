@@ -1,6 +1,8 @@
 program asdasd;
 	var a, b, c : integer;
-	str : String;
+	str:String;
 begin
 	c := a - b + 15;
+	c+=10;
+	b*=20;
 end.
