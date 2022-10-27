@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Lexer;
 
 public class Lexic
     {
-        private string buf = ""; // буфер для хранения лексемы
+        private string buf = "";
         private char[] sm = new char[1];
         private string[] Words = {"and", "end", "nil", "set", "array", "file", "not", "then", "begin", "for", "of", "to", "case", "function", "or", "type", "const", "goto", "packed", "until", "div", "if", "procedure", "var", "do", "in", "program", "while", "downto", "label", "record", "with", "else", "mod", "repeat", "AND", "END", "NIL", "SET", "ARRAY", "FILE", "NOT", "THEN", "BEGIN", "FOR", "OF", "TO", "CASE", "FUNCTION", "OR", "TYPE", "CONST", "GOTO", "PACKED", "UNTIL", "DIV", "IF", "PROCEDURE", "VAR", "DO", "IN", "PROGRAM", "WHILE", "DOWNTO", "LABEL", "RECORD", "WITH", "ELSE", "MOD", "REPEAT"};
         private string[] Delimiter = { ".", ";", ",", "(", ")", "+", "-", "*", "/", "=", ">", "<" };
         private int dt = 0;
-        private enum States { S, NUM, DLM, FIN, ID, ER, ASGN, COM } // состояния state-машины
-        private States _state; // хранит текущее состояние
+        private enum States { S, NUM, DLM, FIN, ID, ER, ASGN, COM }
+        private States _state;
         
         public readonly List<Lex> Lexemes = new List<Lex>();
         private string[] TID = { "" };
         private string[] TNUM = { "" };
-        private StringReader sr; // позволяет посимвольно считывать строку
+        private StringReader sr;
 
         private void GetNext()
         {
@@ -191,7 +192,22 @@ class Program
             
             foreach (var lex in lexic.Lexemes)
             {
-                Console.Write("id: " + lex.Id + " lex: " + lex.Lexeme + " val: " + lex.Value + Environment.NewLine);
+                switch(lex.Id)
+                {
+                    case 1:
+                        Console.Write("служебный: " + lex.Value + " val: " + '\n');
+                        break;
+                    case 2:
+                        Console.Write("ограничитель: " + lex.Value + " val: " + '\n');
+                        break;
+                    case 3:
+                        Console.Write("число: "+ " lex: " + lex.Value + " val: " + '\n');
+                        break;
+                    case 4:
+                        Console.Write("идентификатор: "+ lex.Value + " val: " + '\n');
+                        break;
+                }
+                        
             }
         }
     }

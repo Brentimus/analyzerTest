@@ -2,6 +2,5 @@ program asdasd;
 	var a, b, c : integer;
 	str : String;
 begin
-{   }
 	c := a - b + 15;
 end.
