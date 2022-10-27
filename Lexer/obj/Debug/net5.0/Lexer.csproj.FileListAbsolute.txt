@@ -1,0 +1,16 @@
+D:\FEFU\C#\Tester\Lexer\bin\Debug\net5.0\Lexer.exe
+D:\FEFU\C#\Tester\Lexer\bin\Debug\net5.0\Lexer.deps.json
+D:\FEFU\C#\Tester\Lexer\bin\Debug\net5.0\Lexer.runtimeconfig.json
+D:\FEFU\C#\Tester\Lexer\bin\Debug\net5.0\Lexer.runtimeconfig.dev.json
+D:\FEFU\C#\Tester\Lexer\bin\Debug\net5.0\Lexer.dll
+D:\FEFU\C#\Tester\Lexer\bin\Debug\net5.0\Lexer.pdb
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.csproj.AssemblyReference.cache
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.GeneratedMSBuildEditorConfig.editorconfig
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.AssemblyInfoInputs.cache
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.AssemblyInfo.cs
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.csproj.CoreCompileInputs.cache
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.dll
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\refint\Lexer.dll
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.pdb
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\Lexer.genruntimeconfig.cache
+D:\FEFU\C#\Tester\Lexer\obj\Debug\net5.0\ref\Lexer.dll

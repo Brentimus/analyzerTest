@@ -3,6 +3,7 @@ using System.IO;
 
 namespace CheckerOut
 {
+    
     class Program
     {
         static void Main(string[] args)
