@@ -1,3 +1,5 @@
 .idea
-CheckerOut/bin/
-Tester/bin/
+/CheckerOut/bin/
+/CheckerOut/obj/
+/Lexer/bin/
+/Lexer/obj/

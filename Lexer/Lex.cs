@@ -2,21 +2,19 @@ namespace Lexer
 {
     public class Lex
     {
-        public int Id;
-        public int Lexeme;
-        public string Value;
-        /*public int Line;
-        public int Column;*/
-        
-
-        public Lex(int id, int lexeme, string value)
+        public lexType Id;
+        //public object Value;
+        public string Source;
+        public int Line;
+        public int Column;
+    
+        public Lex(lexType id, string source, int line, int column)
         {
             this.Id = id;
-            this.Lexeme = lexeme;
-            this.Value = value;/*
+            //this.Value = value;
+            this.Source = source;
             this.Line = line;
-            this.Column = column;*/
-
+            this.Column = column;
         }
     }
 }
