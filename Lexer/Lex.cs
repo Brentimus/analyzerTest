@@ -16,5 +16,10 @@ namespace Lexer
             this.Line = line;
             this.Column = column;
         }
+
+        public override string ToString()
+        {
+            return Line+"\t"+ Column +"\t"+Id +"   \t"+Source;
+        }
     }
 }
