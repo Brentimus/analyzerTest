@@ -2,16 +2,16 @@ namespace Lexer
 {
     public class Lex
     {
-        public lexType Id;
-        //public object Value;
+        public LexType lexType;
+        public object Value;
         public string Source;
         public int Line;
         public int Column;
     
-        public Lex(lexType id, string source, int line, int column)
+        public Lex(LexType lexType, string source, object value, int line, int column)
         {
-            this.Id = id;
-            //this.Value = value;
+            this.lexType = lexType;
+            this.Value = value;
             this.Source = source;
             this.Line = line;
             this.Column = column;
@@ -19,7 +19,7 @@ namespace Lexer
 
         public override string ToString()
         {
-            return Line+"\t"+ Column +"\t"+Id +"   \t"+Source;
+            return Line+"\t"+ Column +"\t  "+lexType +"\t    "+Value+"   \t"+Source;
         }
     }
 }

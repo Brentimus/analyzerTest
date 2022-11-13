@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 namespace Lexer
@@ -8,23 +7,24 @@ namespace Lexer
     public class Scanner
     {
         private char[] _sm = new char[1];
-
-        readonly string[] _delimiter = { ".", ";", ",", "(", ")", "+", "-", "*", "/", "=", ">", "<" }; // Это я тоже в Enum переделаю
-        private int _dt = 0;
-        private int pos = 0;
+        private int _dt;
+        private int _pos;
         private States _state;
 
         public List<Lex> Lexemes = new List<Lex>();
-        readonly string[] _tid = { "" };
-        readonly string[] _tnum = { "" };
         private StreamReader _sr;
         private int _line = 1;
         private int _column = 1;
-        public static string _buf;
+        private static string _buf;
 
         private void GetNext()
         {
-            _sr.Read(_sm, 0, 1);
+            if (_sr.EndOfStream)
+            {
+                _sm = new char[1];
+            } else
+                _sr.Read(_sm, 0, 1);
+
         }
         private void ClearBuf()
         {
@@ -34,41 +34,46 @@ namespace Lexer
         private void AddBuf(char symbol)
         {
             _buf += symbol;
-            _column++;
         }
-
-        private (int, string) SearchLex (string[] lexemes)
-        {
-            var srh = Array.FindIndex(lexemes, s => s.Equals(_buf));
-            if (srh != -1)
-                return (srh, _buf);
-            return (-1, "");
-        }
-        private (int, string) SearchLex2 ()
+        
+        private string SearchLex ()
         {
             if(Enum.TryParse(_buf, true, out KeyWords keyWords))
             {
-                return (0, Enum.Parse(typeof(KeyWords), _buf, true).ToString().ToLower() );
+                return Enum.Parse(typeof(KeyWords), _buf, true).ToString().ToLower();
             }
-            else
+            return "";
+        }
+
+        public void SkipSpace()
+        {
+            switch (_sm[0])
             {
-                return (-1, "");
+                case ' ':
+                case '\n':
+                case '\t':
+                case '\r':
+                case '\0':
+                    if (_sm[0] == ' ')
+                        _column++;
+                    else if (_sm[0] == '\t')
+                        _column += 4;
+                    else if (_sm[0] == '\n')
+                    {
+                        _column = 1;
+                        _line++;
+                    }
+                    GetNext();
+                    if (!_sr.EndOfStream)
+                        SkipSpace();
+                    break;
             }
+            _state = States.S;
         }
-
-        private (int, string) PushLex(string[] lexemes, string buf)
+        private void AddLex(List<Lex> lexes, LexType id, object value, string source)
         {
-            var srh = Array.FindIndex(lexemes, s => s.Equals(buf));
-            if (srh != -1)
-                return (-1, "");
-            Array.Resize(ref lexemes, lexemes.Length + 1);
-            lexemes[lexemes.Length - 1] = buf;
-            return (lexemes.Length - 1, buf);
-        }
-
-        private void AddLex(List<Lex> lexes, lexType id, string source)
-        {
-            lexes.Add(new Lex(id, source, _line, pos));
+            _column += source.Length;
+            lexes.Add(new Lex(id, source, value, _line, _pos));
         }
 
         public void Analysis(StreamReader fileReader)
@@ -79,11 +84,8 @@ namespace Lexer
                 switch (_state)
                 {
                     case States.S:
-                        pos = _column;
-                        if (_sr.EndOfStream)
-                        {
-                            _state = States.EOF;
-                        }
+                        SkipSpace();
+                        _pos = _column;
                         if (Char.IsLetter(_sm[0]))
                         {
                             ClearBuf();
@@ -98,46 +100,91 @@ namespace Lexer
                             _state = States.Num;
                         }
                         else
-                            switch (_sm[0])
                         {
-                            case '{':
-                                _state = States.Com;
-                                GetNext();
-                                break;
-                            case ':':
-                                _state = States.ASGN;
-                                ClearBuf();
-                                AddBuf(_sm[0]);
-                                GetNext();
-                                break;
-                            case '.':
-                                AddLex(Lexemes, lexType.Separator,_sm[0].ToString());
-                                ClearBuf();
-                                GetNext();
-                                break;
-                            case '+': case '-': case '/': case '*':
-                                _state = States.Opr;
-                                ClearBuf();
-                                AddBuf(_sm[0]);
-                                GetNext();
-                                break;
-                            case ' ': case '\n': case '\t': case '\r': case '\0':
-                                if (_sm[0] == ' ')
-                                    _column++;
-                                else if (_sm[0] == '\t')
-                                    _column+=4;
-                                else if (_sm[0] == '\n')
-                                {
-                                    _column = 1;
-                                    _line++;
-                                }
-                                GetNext();
-                                break;
-                            default:
-                                _state = States.Dlm;
-                                break;
+                            ClearBuf();
+                            switch (_sm[0])
+                            {
+                                case ';':
+                                    AddLex(Lexemes, LexType.Separator, LexValue.SEMICOLOM, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                case ',':
+                                    AddLex(Lexemes, LexType.Separator, LexValue.COMMA, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                case '(':
+                                    AddLex(Lexemes, LexType.Separator, LexValue.LPAREN, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                case ')':
+                                    AddLex(Lexemes, LexType.Separator, LexValue.RPAREN, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                case '[':
+                                    AddLex(Lexemes, LexType.Separator, LexValue.LBRACK, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                case ']':
+                                    AddLex(Lexemes, LexType.Separator, LexValue.RBRACK, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                case ':':
+                                    _state = States.ASGN;
+                                    AddBuf(_sm[0]);
+                                    GetNext();
+                                    break;
+                                case '<':
+                                    _state = States.ASGN;
+                                    AddBuf(_sm[0]);
+                                    GetNext();
+                                    break;
+                                case '>':
+                                    _state = States.ASGN;
+                                    AddBuf(_sm[0]);
+                                    GetNext();
+                                    break;
+                                case '.':
+                                    _state = States.Dot;
+                                    AddBuf(_sm[0]);
+                                    GetNext();
+                                    break;
+                                case '+':
+                                case '-':
+                                case '/':
+                                case '*':
+                                    _state = States.Opr;
+                                    AddBuf(_sm[0]);
+                                    GetNext();
+                                    break;
+                                case '=':
+                                    AddLex(Lexemes, LexType.Operator, LexValue.EQUAL, _sm[0].ToString());
+                                    GetNext();
+                                    break;
+                                default:
+                                    if (_sr.EndOfStream)
+                                    {
+                                        _state = States.EOF;
+                                    }
+                                    else
+                                        _state = States.ER;
+                                    break;
+                            }
                         }
                         break;
+                    
+                    case States.Dot:
+                        if (_sm[0] == '.')
+                        {
+                            AddBuf(_sm[0]);
+                            AddLex(Lexemes, LexType.Separator, LexValue.DOUBLEDOT, _buf);
+                            GetNext();
+                        }
+                        else
+                            AddLex(Lexemes, LexType.Separator, LexValue.DOT, _buf);
+                        ClearBuf();
+                        _state = States.S;
+                        break;
+                        
                     case States.Id:
                         if (Char.IsLetterOrDigit(_sm[0]))
                         {
@@ -146,14 +193,42 @@ namespace Lexer
                         }
                         else
                         {
-                            var srch = SearchLex2();
+                            var searchLex = SearchLex();
                             
-                            if (srch.Item1 != -1)
-                                AddLex(Lexemes, lexType.Keyword, srch.Item2);
+                            if (searchLex != "")
+                                switch (searchLex)
+                                {
+                                    case "shr":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.SHR, searchLex);
+                                        break;
+                                    case "shl":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.SHL, searchLex);
+                                        break;
+                                    case "div":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.DIV, searchLex);
+                                        break;
+                                    case "mod":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.MOD, searchLex);
+                                        break;
+                                    case "or":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.OR, searchLex);
+                                        break;
+                                    case "xor":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.XOR, searchLex);
+                                        break;
+                                    case "not":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.NOT, searchLex);
+                                        break;
+                                    case "and":
+                                        AddLex(Lexemes, LexType.Operator, KeyWords.AND, searchLex);
+                                        break;
+                                    default:
+                                        AddLex(Lexemes, LexType.Keyword, searchLex.ToUpper() , searchLex);
+                                        break;
+                                }
                             else
                             {
-                                var j = PushLex(_tid, _buf.ToString());
-                                AddLex(Lexemes, lexType.Indificator, j.Item2);
+                                AddLex(Lexemes, LexType.Indificator, _buf, _buf);
                             }
                             _state = States.S;
                         }
@@ -163,42 +238,30 @@ namespace Lexer
                         if (Char.IsDigit(_sm[0]))
                         {
                             _dt = _dt * 10 + (int)(_sm[0] - '0');
-                            _column++;
+                            //_column++;
                             GetNext();
                         }
                         else
                         {
-                            _column++;
-                            var j = PushLex(_tnum, _dt.ToString());
-                            AddLex(Lexemes, lexType.Integer, j.Item2);
+                            //_column++;
+                            AddLex(Lexemes, LexType.Integer, _dt, _dt.ToString());
                             _state = States.S;
                         }
                         break;
-                    case States.Dlm:
-                        ClearBuf();
-                        AddBuf(_sm[0]);
 
-                        var r = SearchLex(_delimiter);
-                        if (r.Item1 != -1)
-                        {
-                            AddLex(Lexemes, lexType.Separator, r.Item2);
-                            _state = States.S;
-                            GetNext();
-                        }
-                        else
-                            _state = States.ER;
-                        break;
-                    
                     case States.ASGN:
-                        if (_sm[0] == '=')
+                        switch (_sm[0])
                         {
-                            AddBuf(_sm[0]);
-                            AddLex(Lexemes, lexType.Operator, _buf);
-                            ClearBuf();
-                            GetNext();
+                            case '=':
+                                AddBuf(_sm[0]);
+                                AddLex(Lexemes, LexType.Operator, LexValue.IMPLICIT , _buf);
+                                ClearBuf();
+                                GetNext();
+                                break;
+                            default:
+                                AddLex(Lexemes, LexType.Separator, LexValue.COLON, _buf);
+                                break;
                         }
-                        else
-                            AddLex(Lexemes, lexType.Operator, _buf);
                         _state = States.S;
                         break;
                         
@@ -206,22 +269,60 @@ namespace Lexer
                         if (_sm[0] == '=')
                         {
                             AddBuf(_sm[0]);
-                            AddLex(Lexemes, lexType.Operator, _buf);
+                            switch (_buf.ToCharArray()[0])
+                            {
+                                case '-':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.ASSIGN_SUB, _buf);
+                                    break;
+                                case '+':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.ASSIGN_ADD, _buf);
+                                    break;
+                                case '*':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.ASSIGN_MUL, _buf);
+                                    break;
+                                case '/':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.ASSIGN_DIV, _buf);
+                                    break;
+                            }
                             ClearBuf();
                             GetNext();
                         }
                         else
-                            AddLex(Lexemes, lexType.Operator, _buf);
+                            switch (_buf.ToCharArray()[0])
+                            {
+                                case '-':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.SUB, _buf);
+                                    break;
+                                case '+':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.ADD, _buf);
+                                    break;
+                                case '*':
+                                    AddLex(Lexemes, LexType.Operator,LexValue.MUL, _buf);
+                                    break;
+                                case '/':
+                                    AddLex(Lexemes, LexType.Operator,KeyWords.DIV, _buf);
+                                    break;
+                                default: 
+                                    AddLex(Lexemes, LexType.Operator,LexValue.EQUAL, _buf);
+                                    break;
+                            }
+                            
                         _state = States.S;
                         break;
                     
+                    case States.Com:
+                        while (true)
+                        {
+                            
+                        }
+                    
                     case States.EOF:
                         _state = States.Fin;
-                        AddLex(Lexemes, lexType.EOF, "eof");
+                        Lexemes.Add(new Lex(LexType.EOF, "", "", _line, _column));
                         break;
 
                     case States.ER:
-                        Console.Write("Error");
+                        AddLex(Lexemes, LexType.EOF, "error", _sm.ToString());
                         _state = States.Fin;
                         return;
                 }

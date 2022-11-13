@@ -1,19 +1,55 @@
 namespace Lexer
 {
-    public enum lexType
+    public enum LexType
     {
         EOF,
         String,
+        Char,
         Integer,
         Double,
         Operator,
         Keyword,
-        Comment,
         Invaild,
         Indificator,
         Separator
     }
-    enum States { S, Num, Dlm, Fin, Id, ER, ASGN, Com, Opr, EOF}
+
+    public enum LexValue
+    {
+        IMPLICIT,
+        ASSIGN_ADD,
+        ASSIGN_SUB,
+        ASSIGN_MUL,
+        ASSIGN_DIV,
+        ADD,
+        SUB,
+        MUL,
+        EQUAL,
+        LESS,
+        MORE,
+        NO_EQUAL,
+        LESS_EQUAL,
+        MORE_EQUAL,
+        ENDOFFILE,
+        KEYWORD,
+        COMMENT,
+        INDIFICATOR,
+        L_CHAR,             // literal char
+        L_STRING,           // literal string
+        L_INTEGER,          // literal integer
+        L_DOUBLE,           // literal double
+        COMMA,
+        DOT,
+        DOUBLEDOT,
+        SEMICOLOM,
+        COLON,
+        LPAREN,
+        RPAREN,
+        LBRACK,
+        RBRACK,
+    }
+    
+    enum States { S, Num, Dlm, Fin, Id, ER, ASGN, Opr, EOF, Com, Dot}
     enum KeyWords {
             AND,
             ARRAY,
@@ -25,9 +61,9 @@ namespace Lexer
             CONSTRUCTOR,
             CONTINUE,
             DESTRUCTOR,
-            DIV,
             DO,
             DOWNTO,
+            DIV,
             ELSE,
             END,
             FALSE,
