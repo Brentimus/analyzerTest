@@ -1,13 +1,16 @@
 program asdasd;
-	var a, b, c : .. integer;
-	str:String;
+var a, b, c : .. integer;
+str:String;
 begin
-	c := a - b + 123;
+{	c := a - b + 123;
 	b += 987;
-	d *= (456);
-	mod
-	OR
-    // asdfsdafsadf
-    asdf
+	d += 456;
+//	  -=
+(*	  /=
+s.. . ... . . 
+ }   asdf
 	and
+*)  *
 end.
+
+123 }
