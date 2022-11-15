@@ -1,16 +1,7 @@
-program asdasd;
-var a, b, c : .. integer;
-str:String;
-begin
-{	c := a - b + 123;
-	b += 987;
-	d += 456;
-//	  -=
-(*	  /=
-s.. . ... . . 
- }   asdf
-	and
-*)  *
-end.
+Program asdf
 
-123 }
+var asdf : integer;  {}   {{{{
+{}
+begin
+asdf := 123;
+end.

@@ -6,4 +6,8 @@
         <RootNamespace>Tester</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Compile Include="obj\ScannerUtils.cs" />
+    </ItemGroup>
+
 </Project>

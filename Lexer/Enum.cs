@@ -30,10 +30,6 @@ namespace Lexer
         NO_EQUAL,
         LESS_EQUAL,
         MORE_EQUAL,
-        ENDOFFILE,
-        KEYWORD,
-        COMMENT,
-        INDIFICATOR,
         L_CHAR,             // literal char
         L_STRING,           // literal string
         L_INTEGER,          // literal integer
@@ -49,7 +45,7 @@ namespace Lexer
         RBRACK,
     }
     
-    enum States { S, Num, Dlm, Fin, Id, ER, ASGN, Opr, EOF, Com, Dot}
+    enum States {Num, Fin, Id, ER, Opr, EOF}
     enum KeyWords {
             AND,
             ARRAY,
