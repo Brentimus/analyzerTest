@@ -13,25 +13,21 @@ class Program
             {
                 try
                 {
-                    scan.Scanner(fileReader);
+                    Console.WriteLine(scan.Scanner(fileReader));
                     
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine(scan._line+"\t"+scan._pos+"\t"+e.Message);
                     break;
                 }
 
                 if (fileReader.EndOfStream)
                 {
-                    scan.Lexemes.Add(new Lex(LexType.EOF, "", "", scan._line, ++scan._column));
+                    scan.lexeme = new Lex(LexType.EOF, "", "", scan._line, ++scan._column);
+                    Console.WriteLine(scan.lexeme);
                     break;
                 }
-            }
-            foreach (var lex in scan.Lexemes)
-            {
-                // lex.ToString();
-                Console.WriteLine(lex);
             }
         }
     }

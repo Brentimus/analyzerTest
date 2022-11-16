@@ -30,10 +30,6 @@ namespace Lexer
         NO_EQUAL,
         LESS_EQUAL,
         MORE_EQUAL,
-        L_CHAR,             // literal char
-        L_STRING,           // literal string
-        L_INTEGER,          // literal integer
-        L_DOUBLE,           // literal double
         COMMA,
         DOT,
         DOUBLEDOT,

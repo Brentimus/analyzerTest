@@ -3,5 +3,5 @@ Program asdf
 var asdf : integer;  {}   {{{{
 {}
 begin
-asdf := 123;
+asdf :=;
 end.
