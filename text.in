@@ -2,6 +2,7 @@ Program asdf
 
 var asdf : integer;  {}   {{{{
 {}
-begin
-asdf :=;
+#7
+
+asdf := &0101011 $BA9.8788.8788;
 end.

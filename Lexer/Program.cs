@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
+using System.Threading;
 using Lexer;
 class Program
 {
@@ -7,6 +9,7 @@ class Program
     {
         //Scanner scan = new Scanner();
         ScannerLexer scan = new ScannerLexer();
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         using (StreamReader fileReader = new StreamReader("D:/FEFU/C#/Tester/text.in"))
         {
             while (true)
@@ -18,14 +21,14 @@ class Program
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(scan._line+"\t"+scan._pos+"\t"+e.Message);
+                    Console.WriteLine(scan.Line+"\t"+scan.Pos+"\t"+LexType.Invaild+"\t"+e.Message);
                     break;
                 }
 
                 if (fileReader.EndOfStream)
                 {
-                    scan.lexeme = new Lex(LexType.EOF, "", "", scan._line, ++scan._column);
-                    Console.WriteLine(scan.lexeme);
+                    scan.Lexeme = new Lex(LexType.Eof, "", "", scan.Line, ++scan.Column);
+                    Console.WriteLine(scan.Lexeme);
                     break;
                 }
             }
