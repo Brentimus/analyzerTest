@@ -17,13 +17,13 @@ public class ScannerLexer
     {
         if (Peek() == '/' && _sm[0] == '/')
         {
-            while (_sm[0] != '\n')
+            while (Peek() != '\n')
             {
+                GetNext();
                 if (_sr.EndOfStream)
                 {
-                    throw new Exception("comment error");
+                    break;
                 }
-                GetNext();
             }
         } else if (Peek() == '*' && _sm[0] == '(')
         {
@@ -70,6 +70,10 @@ public class ScannerLexer
             case ' ':
             case '\r':
             case '\0':
+                if (_sr.EndOfStream)
+                {
+                    break;
+                }
                 GetNext();
                 SkipSpace();
                 break;
@@ -151,7 +155,7 @@ public class ScannerLexer
         {
             AddBuf(_sm[0]);
             _state = States.Num;
-        }
+        } 
         else
         {
             switch (_sm[0])
@@ -278,7 +282,7 @@ public class ScannerLexer
             case States.Id:
                 while (_state == States.Id)
                 {
-                    if (Char.IsLetterOrDigit(Peek())) 
+                    if (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
                     {
                         GetNext();
                         AddBuf(_sm[0]);
