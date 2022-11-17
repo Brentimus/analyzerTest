@@ -19,7 +19,7 @@ namespace Lexer
 
         public override string ToString()
         {
-            return Line+"\t"+ Column +"\t  "+LexType +"\t    "+Value+"   \t"+Source;
+            return Line+"  "+ Column +"  "+LexType +"  "+Value+"  "+Source;
         }
     }
 }

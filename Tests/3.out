@@ -1,0 +1,20 @@
+1  1  Operator  Add  +
+2  1  Operator  AssignAdd  +=
+3  1  Operator  Sub  -
+4  1  Operator  AssignSub  -=
+5  1  Operator  Mul  *
+6  1  Operator  AssignMul  *=
+7  1  Operator  Div  /
+8  1  Operator  AssignDiv  /=
+9  1  Operator  Equal  =
+10  1  Operator  Less  <
+11  1  Operator  Less  <
+11  2  Operator  Less  <
+12  1  Operator  NoEqual  <>
+13  1  Operator  LessEqual  <=
+14  1  Operator  More  >
+15  1  Operator  More  >
+15  2  Operator  More  >
+16  1  Operator  MoreEqual  >=
+17  1  Operator  Implicit  :=
+17  3  Eof
