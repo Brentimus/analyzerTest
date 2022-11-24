@@ -11,7 +11,7 @@ namespace ChekerOut
         static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            for (int i = 1; i <=5; i++)
+            for (int i = 1; i <= 6; i++)
             {
                 ScannerLexer scan = new ScannerLexer();
                 using (StreamReader fileReaderOut = new StreamReader("../../../../Tests/"+i+".out"))

@@ -1,31 +1,30 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Threading;
+﻿using System.Globalization;
 using Lexer;
 
 class Program
 {
     static void Main(string[] args)
     {
-        ScannerLexer scan = new ScannerLexer();
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         using (StreamReader fileReader = new StreamReader("../../../../test.in"))
         {
+            ScannerLexer scan = new ScannerLexer();
+            Parser.Parser parser = new Parser.Parser(); 
+            
             while (!fileReader.EndOfStream)
             {
                 try
                 {
-                    Console.WriteLine(scan.Scanner(fileReader));
+                    parser.ParserExp(fileReader);
                 }
                 catch (Exception e)
                 {
-                    Console.Write(scan.Line +"  "+scan.Pos+"  "+LexType.Invaild+"  "+e.Message);
+                    Console.Write(e.Message);
                     return;
                 }
-            } 
-            if (scan.Lexeme.LexType != LexType.Eof)
-                Console.Write(scan.Scanner(fileReader));
+            }
+
+            Console.WriteLine(parser.ParserExp(fileReader));
         }
     }
 }

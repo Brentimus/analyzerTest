@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -12,13 +14,14 @@ public class ScannerLexer
     public Lex Lexeme;
     private StreamReader _sr;
     public int Line = 1;
-    public int Column = 0;
+    public int Column;
     public int Pos;
     public int baseNum = 10;
     private static string _buf;
     
     private void SkipCommentSpace()
     {
+        SkipSpace();
         if (Peek() == '/' && _sm[0] == '/')
         {
             while (Peek() != '\n')
@@ -30,7 +33,8 @@ public class ScannerLexer
                     break;
                 }
             }
-        } else if (Peek() == '*' && _sm[0] == '(')
+        } 
+        else if (Peek() == '*' && _sm[0] == '(') 
         {
             while (true)
             {
@@ -46,7 +50,8 @@ public class ScannerLexer
                     break;
                 }
             }
-        } else if (_sm[0] == '{')
+        } 
+        else if (_sm[0] == '{')
         {
             while (_sm[0] != '}')
             {
@@ -63,7 +68,6 @@ public class ScannerLexer
             SkipSpace();
             return;
         }
-        SkipSpace();
         SkipCommentSpace();
     }
     private void SkipSpace()
@@ -77,6 +81,7 @@ public class ScannerLexer
             case '\0':
                 if (_sr.EndOfStream)
                 {
+                    _sm = new char[1];
                     break;
                 }
                 GetNext();
@@ -168,8 +173,8 @@ public class ScannerLexer
                             _buf = Convert.ToInt64(_buf, baseNum).ToString();
                             AddBuf(_sm[0]);
                             bufNum += _sm[0];
-                            if (!char.IsDigit(Peek()))
-                                throw new Exception("invalid Double");
+                            /*if (!char.IsDigit(Peek()))
+                                throw new Exception("invalid Double");*/
                             while (true)
                             {
                                 if (char.IsDigit(Peek()))
@@ -180,14 +185,13 @@ public class ScannerLexer
                                 }
                                 else
                                 {
-                                    AddLex(LexType.Double, Convert.ToDouble(_buf), baseNum == 16 ? "$"+bufNum : baseNum == 8 ? "&"+bufNum : baseNum == 2 ? "%"+bufNum : bufNum);
+                                    AddLex(LexType.Double, Convert.ToDouble(_buf).ToString("E16", CultureInfo.InvariantCulture), baseNum == 16 ? "$"+bufNum : baseNum == 8 ? "&"+bufNum : baseNum == 2 ? "%"+bufNum : bufNum);
                                     _state = States.Fin;
                                     return;
                                 }
                             }
                         }
-                        else
-                            Back();
+                        Back();
                     }
                     if (IsDigit(Peek(), baseNum))
                     {
@@ -224,7 +228,7 @@ public class ScannerLexer
                                     AddLex(LexType.Operator, KeyWords.Shl, _buf);
                                     break;
                                 case "div":
-                                    AddLex(LexType.Operator, KeyWords.Div, _buf);
+                                    AddLex(LexType.Operator, LexValue.Div, _buf);
                                     break;
                                 case "mod":
                                     AddLex(LexType.Operator, KeyWords.Mod, _buf);
@@ -295,7 +299,7 @@ public class ScannerLexer
                             AddLex(LexType.Operator,LexValue.AssignDiv, _buf);
                         }
                         else
-                            AddLex(LexType.Operator,KeyWords.Div, _buf);
+                            AddLex(LexType.Operator,LexValue.Div, _buf);
                         break;
                 }
                 _state = States.Fin;
@@ -342,7 +346,6 @@ public class ScannerLexer
         _state = States.Fin;
         _sr = fileReader;
         GetNext();
-        SkipSpace();
         SkipCommentSpace();
         Pos = Column;
         baseNum = 10;
@@ -473,7 +476,7 @@ public class ScannerLexer
                     break;
                 
                 default:
-                    if (_sr.EndOfStream && _sm[0] == '\0')
+                    if (_sm[0] == '\0'  && _sr.EndOfStream)
                     {
                         _state = States.Eof;
                     } else

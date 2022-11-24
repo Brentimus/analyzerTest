@@ -10,11 +10,11 @@ namespace Lexer
     
         public Lex(LexType lexType, string source, object value, int line, int column)
         {
-            this.LexType = lexType;
-            this.Value = value;
-            this.Source = source;
-            this.Line = line;
-            this.Column = column;
+            LexType = lexType;
+            Value = value;
+            Source = source;
+            Line = line;
+            Column = column;
         }
 
         public override string ToString()

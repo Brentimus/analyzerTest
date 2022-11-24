@@ -24,6 +24,7 @@ namespace Lexer
         Add,
         Sub,
         Mul,
+        Div,
         Equal,
         Less,
         More,
