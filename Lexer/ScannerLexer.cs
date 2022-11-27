@@ -159,7 +159,7 @@ public class ScannerLexer
             16 => c is >= '0' and <= '9' or >= 'A' and <= 'F' or >= 'a' and <= 'f',
             8 => c is >= '0' and <= '7',
             2 => c is >= '0' and <= '1',
-            _ => throw new ArgumentOutOfRangeException("invalid Interger")
+            _ => throw new ArgumentOutOfRangeException("invalid Digit")
         };
     }
 
