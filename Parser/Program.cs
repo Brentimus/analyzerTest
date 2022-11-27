@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-class Program
+class program
 {
     static void Main(string[] args)
     {
