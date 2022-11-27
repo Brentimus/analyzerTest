@@ -4,6 +4,10 @@
 1. cd Lexer
 2. dotnet run
 
+Запуск синтаксический анализ простейших выражений с файла test.in
+1. cd Parser
+2. dotnet run
+
 Запуск автоматических тестов
 1. cd CheckerOut
 2. dotnet run
