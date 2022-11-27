@@ -8,15 +8,15 @@ class Program
 {
     static void Main(string[] args)
     {
-        ScannerLexer scan = new ScannerLexer();
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         using (StreamReader fileReader = new StreamReader("../../../../test.in"))
         {
+            ScannerLexer scan = new ScannerLexer(fileReader);
             while (!fileReader.EndOfStream)
             {
                 try
                 {
-                    Console.WriteLine(scan.Scanner(fileReader));
+                    Console.WriteLine(scan.Scanner());
                 }
                 catch (Exception e)
                 {
@@ -25,7 +25,7 @@ class Program
                 }
             } 
             if (scan.Lexeme.LexType != LexType.Eof)
-                Console.Write(scan.Scanner(fileReader));
+                Console.Write(scan.Scanner());
         }
     }
 }

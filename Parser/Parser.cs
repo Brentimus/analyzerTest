@@ -1,65 +1,119 @@
+using System.Text;
 using Lexer;
+using Microsoft.VisualBasic;
 
 namespace Parser;
 
 public class Parser
 {
-    ScannerLexer scan = new ScannerLexer();
-    StreamReader _sr;
-    public static Lex curLex;
+    private Lex curLex;
+    private ScannerLexer scan;
+    public Parser(StreamReader fileReader)
+    {
+        scan = new ScannerLexer(fileReader);
+        curLex = scan.Scanner();
+    }
 
     public class Node
     {
-        public Node(Lex lex, Node left, Node right)
+        public Node(Lex lexeme)
         {
-            LexCur = lex;
+            LexCur = lexeme;
+        }
+        public Lex LexCur { get; set; }
+
+        virtual public void PrintTree(string indent="", string side = "")
+        {
+            indent = indent.Replace("├───", "│   ");
+            indent = indent.Replace("└───", "    ");
+            if (side == "R")
+                indent += "└───";
+            else if (side == "L")
+                indent += "├───";
+            Console.WriteLine($"{indent}{LexCur.Source}");
+        }
+
+        virtual public double Calc()
+        {
+            double num;
+            if (double.TryParse(LexCur.Source, out num))
+            {
+                return num;
+            }
+            //Пока переменные не инициализируется
+            throw new Exception(LexCur.Source+ "\t not number");
+        }
+    }
+
+    public class BinOp : Node
+    {
+        public BinOp(Lex lexCur, Node left, Node right) : base(lexCur)
+        {
             Left = left;
             Right = right;
         }
         public Node Right { get; set; }
         public Node Left { get; set; }
-        public Lex LexCur { get; set; }
-    }
-
-    public class BinOp : Node
-    {
-        public BinOp(Lex lex, Node left, Node right) : base(lex, left, right)
+        
+        public override void PrintTree(string indent, string side)
         {
+            indent = indent.Replace("├───", "│   ");
+            indent = indent.Replace("└───", "    ");
+            if (LexCur != null)
+            {
+                if (side == "R")
+                    indent += "└───";
+                else if (side == "L")
+                    indent += "├───";
+                Console.WriteLine($"{indent}{LexCur.Source}");
+                
+                Left.PrintTree(indent, "L");
+                Right.PrintTree(indent, "R");
+            }
         }
-
-        /*public int Calc(Node a)
+        public override double Calc()
         {
-            if (LexCur.Value == (object) LexValue.Add)
-                return Calc(Left) + Calc(Right);
-            if (LexCur.Value == (object) LexValue.Sub)
-                return Calc(Left) - Calc(Right);
-            if (LexCur.Value == (object) LexValue.Mul)
-                return Calc(Left) * Calc(Right);
-            if (LexCur.Value == (object) LexValue.Div)
-                return Calc(Left) / Calc(Right);
-            return 0;
-        }*/
+            switch ((LexValue)LexCur.Value)
+            {
+                case LexValue.Add:
+                    return Left.Calc() + Right.Calc();
+                case LexValue.Sub:
+                    return Left.Calc() - Right.Calc();
+                case LexValue.Mul:
+                    return Left.Calc() * Right.Calc();
+                case LexValue.Div:
+                    return Left.Calc() / Right.Calc();
+            }
+            throw new Exception("error calc");
+        }
         public override string ToString()
         {
             return LexCur.Source;
         }
         
     }
-    public BinOp ParserExp(StreamReader fileReader)
+    public class IdNode : Node
     {
-        _sr = fileReader;
-        curLex = scan.Scanner(_sr);
-        return new BinOp(curLex, null, null);
+        public IdNode(Lex lexeme) : base(lexeme) {}
     }
+    public class NumberNode : Node
+    { 
+        public NumberNode(Lex lexeme) : base(lexeme) {}
+        public override string ToString()
+        {
+            return LexCur.Source;
+        }
+    } 
     
     public Node ParseExpression()
     {
         var left = ParseTerm();
         var lex = curLex;
-        while ((curLex.Value == (object) LexValue.Add) || (curLex.Value == (object) LexValue.Sub))
+        while (lex.LexType == LexType.Operator && (lex.Value.ToString() == LexValue.Add.ToString() || lex.Value.ToString() == LexValue.Sub.ToString()))
         {
-            curLex = scan.Scanner(_sr);
+            curLex = scan.Scanner();
             left = new BinOp(lex, left, ParseTerm());
+            lex = curLex;
         }
         return left;
     }
@@ -67,37 +121,36 @@ public class Parser
     {
         var left = ParseFactor();
         var lex = curLex;
-        while ((curLex.Value == (object) LexValue.Mul) || (curLex.Value == (object) LexValue.Div))
+        while (lex.LexType == LexType.Operator && (lex.Value.ToString() == LexValue.Mul.ToString()) || (lex.Value.ToString() == LexValue.Div.ToString()))
         {
-            curLex = scan.Scanner(_sr);
-            left = new BinOp(lex, left, ParseTerm());
+            curLex = scan.Scanner();
+            left = new BinOp(lex, left, ParseFactor());
+            lex = curLex;
         }
         return left;
     }
     public Node ParseFactor()
     {
         var lex = curLex;
-        var val = curLex;
-        if (lex.LexType == LexType.Integer)
+        
+        if (lex.LexType == LexType.Integer || lex.LexType == LexType.Double)
         {
-            ParserExp(_sr);
-            Console.WriteLine(lex);
-            return new Node(lex, null, null);
+            curLex = scan.Scanner();
+            return new NumberNode(lex);
         }
         if (lex.LexType == LexType.Indificator)
         {
-            ParserExp(_sr);
-            Console.WriteLine(lex);
-            return new Node(lex, null, null);
+            curLex = scan.Scanner();
+            return new IdNode(lex);
         }
 
-        if (lex.Value == (object) LexValue.Lparen)
+        if (lex.Value.ToString() == LexValue.Lparen.ToString())
         {
-            ParserExp(_sr);
+            curLex = scan.Scanner();
             var e = ParseExpression();
-            if (lex.Value == (object) LexValue.Rparen)
-                throw new Exception("no Rparen");
-            ParserExp(_sr);
+            if (curLex.Value.ToString() != LexValue.Rparen.ToString())
+                throw new Exception(curLex.Line +":"+ curLex.Column + " no Rparen");
+            curLex = scan.Scanner();
             return e;
         }
         throw new Exception("Factor expected");
