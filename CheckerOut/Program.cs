@@ -29,7 +29,7 @@ namespace ChekerOut
                 {
                     Console.WriteLine(pathFile+'\t'+"WA");
                     Console.WriteLine("expected:\n"+line);
-                    Console.WriteLine("found:\n"+found);
+                    Console.Write("found:\n"+found);
                     Environment.Exit(0);
                 }
             }
@@ -41,7 +41,7 @@ namespace ChekerOut
                 {
                     Console.WriteLine(pathFile+'\t'+"WA");
                     Console.WriteLine("expected:\n"+line);
-                    Console.WriteLine("found:\n"+found);
+                    Console.Write("found:\n"+found);
                     Environment.Exit(0);
                 }
             }
@@ -62,18 +62,18 @@ namespace ChekerOut
                     {
                         Console.WriteLine(pathFile+'\t'+"WA");
                         Console.WriteLine("expected:\n"+line);
-                        Console.WriteLine("found:\n"+found);
+                        Console.Write("found:\n"+found);
                         Environment.Exit(0);
                     }
                 }
                 catch (Exception e)
                 {
-                    var found = scan.Line+" "+scan.Pos+" "+LexType.Invaild+" "+e.Message;
+                    var found = scan.Line+"  "+scan.Pos+"  "+LexType.Invaild+"  "+e.Message;
                     if (line != found)
                     {
                         Console.WriteLine(pathFile+'\t'+"WA");
                         Console.WriteLine("expected:\n"+line);
-                        Console.WriteLine("found:\n"+found);
+                        Console.Write("found:\n"+found);
                         Environment.Exit(0);
                     }
                 }
@@ -85,7 +85,7 @@ namespace ChekerOut
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             Console.WriteLine("Lexer Test:");
-            for (int i = 1; i <= 6; i++)
+            for (int i = 1; i <= 12; i++)
             {
                 pathFile = "../../../../Tests/Lexer/"+i;
                 LexerTest(new StreamReader(pathFile+".in"));

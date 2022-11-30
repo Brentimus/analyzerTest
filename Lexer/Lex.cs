@@ -19,6 +19,8 @@ namespace Lexer
 
         public override string ToString()
         {
+            if (LexType == LexType.Eof)
+                return Line + "  " + Column + "  " + LexType;
             return Line+"  "+ Column +"  "+LexType +"  "+Value+"  "+Source;
         }
     }

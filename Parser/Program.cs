@@ -11,8 +11,8 @@ class program
             Parser.Parser parser = new Parser.Parser(fileReader);
             try
             {
-                parser.ParseExpression().PrintTree();
-                //Console.Write(parser.ParseExpression().Calc());
+                //parser.ParseExpression().PrintTree();
+                Console.Write(parser.ParseExpression().Calc());
             }
             catch (Exception e)
             {

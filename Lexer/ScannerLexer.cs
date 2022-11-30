@@ -1,8 +1,6 @@
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 
 namespace Lexer;
 
@@ -540,7 +538,6 @@ public class ScannerLexer
                     AddBuf(_sm[0]);
                     _state = States.Opr;
                     break;
-                
                 default:
                     if (_sm[0] == '\0' && _sr.EndOfStream)
                     {
