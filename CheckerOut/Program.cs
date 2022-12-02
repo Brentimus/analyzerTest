@@ -1,101 +1,104 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Lexer;
 
-namespace ChekerOut
+namespace ChekerOut;
+
+internal class Program
 {
-    class Program
+    public static void ParserTest(string pathFile)
     {
-        private static string pathFile;
-        
-        public static void ParserTest(StreamReader fileReaderIn)
+        var fileReaderIn = new StreamReader(pathFile + ".in");
+        var parser = new Parser.Parser(fileReaderIn);
+        var fileReaderOut = new StreamReader(pathFile + ".out");
+        var line = fileReaderOut.ReadToEnd();
+        var oldOut = Console.Out;
+        try
         {
-            var parser = new global::Parser.Parser(fileReaderIn);
-            var fileReaderOut = new StreamReader(pathFile+".out");
-            var line = fileReaderOut.ReadToEnd();
-            var oldOut = Console.Out;
+            var sw = new StringWriter();
+            Console.SetOut(sw);
+            parser.ParseExpression().PrintTree("");
+            /*var originOutput = new StreamWriter(Console.OpenStandardOutput());
+            originOutput.AutoFlush = true;*/
+            Console.SetOut(oldOut);
+            var found = sw.ToString();
+            if (line + "\r\n" != found)
+            {
+                Console.WriteLine(pathFile + '\t' + "WA");
+                Console.WriteLine("expected:\n" + line);
+                Console.Write("found:\n" + found);
+                Environment.Exit(0);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.SetOut(oldOut);
+            var found = e.Message;
+            if (line != found)
+            {
+                Console.WriteLine(pathFile + '\t' + "WA");
+                Console.WriteLine("expected:\n" + line);
+                Console.Write("found:\n" + found);
+                Environment.Exit(0);
+            }
+        }
+
+        Console.WriteLine(pathFile + ".in\tOK");
+    }
+
+    public static void LexerTest(string pathFile)
+    {
+        var fileReaderIn = new StreamReader(pathFile + ".in");
+        var scan = new ScannerLexer(fileReaderIn);
+        var fileReaderOut = new StreamReader(pathFile + ".out");
+        while (!fileReaderIn.EndOfStream)
+        {
+            string line;
+            line = fileReaderOut.ReadLine();
             try
             {
-                var sw = new StringWriter();
-                Console.SetOut(sw);
-                parser.ParseExpression().PrintTree();
-                /*var originOutput = new StreamWriter(Console.OpenStandardOutput());
-                originOutput.AutoFlush = true;*/
-                Console.SetOut(oldOut);
-                var found = sw.ToString();
-                if (line+"\r\n" != found)
+                var found = scan.Scanner().ToString();
+                if (line != found)
                 {
-                    Console.WriteLine(pathFile+'\t'+"WA");
-                    Console.WriteLine("expected:\n"+line);
-                    Console.Write("found:\n"+found);
+                    Console.WriteLine(pathFile + '\t' + "WA");
+                    Console.WriteLine("expected:\n" + line);
+                    Console.Write("found:\n" + found);
                     Environment.Exit(0);
                 }
             }
             catch (Exception e)
             {
-                Console.SetOut(oldOut);
-                var found = e.Message;
+                var found = scan.Line + "  " + scan.Pos + "  " + e.Message;
                 if (line != found)
                 {
-                    Console.WriteLine(pathFile+'\t'+"WA");
-                    Console.WriteLine("expected:\n"+line);
-                    Console.Write("found:\n"+found);
+                    Console.WriteLine(pathFile + '\t' + "WA");
+                    Console.WriteLine("expected:\n" + line);
+                    Console.Write("found:\n" + found);
                     Environment.Exit(0);
                 }
             }
-            Console.WriteLine(pathFile+".in\tOK");
         }
-        public static void LexerTest(StreamReader fileReaderIn)
-        {
-            var scan = new ScannerLexer(fileReaderIn);
-            var fileReaderOut = new StreamReader(pathFile+".out");
-            while (!fileReaderIn.EndOfStream)
-            {
-                string line;
-                    line = fileReaderOut.ReadLine();
-                try
-                {
-                    var found = scan.Scanner().ToString();
-                    if (line != found)
-                    {
-                        Console.WriteLine(pathFile+'\t'+"WA");
-                        Console.WriteLine("expected:\n"+line);
-                        Console.Write("found:\n"+found);
-                        Environment.Exit(0);
-                    }
-                }
-                catch (Exception e)
-                {
-                    var found = scan.Line+"  "+scan.Pos+"  "+LexType.Invaild+"  "+e.Message;
-                    if (line != found)
-                    {
-                        Console.WriteLine(pathFile+'\t'+"WA");
-                        Console.WriteLine("expected:\n"+line);
-                        Console.Write("found:\n"+found);
-                        Environment.Exit(0);
-                    }
-                }
-            }
-            Console.WriteLine(pathFile +".in\tOK");
-        }
-        
-        static void Main(string[] args)
-        {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            Console.WriteLine("Lexer Test:");
-            for (int i = 1; i <= 12; i++)
-            {
-                pathFile = "../../../../Tests/Lexer/"+i;
-                LexerTest(new StreamReader(pathFile+".in"));
-            }
-            Console.WriteLine("\nParser Test:");
-            for (int i = 1; i <= 6; i++)
-            {
-                pathFile = "../../../../Tests/Parser/"+i;
-                ParserTest(new StreamReader(pathFile+".in"));
-            }
-        }
+
+        Console.WriteLine(pathFile + ".in\tOK");
+    }
+
+    private static void Main(string[] args)
+    {
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+        var files = Directory.GetFiles("../../../../Tests/Lexer/", "*.in")
+            .Select(f => Path.GetFileName(f)[..^3]).ToList();
+
+        Console.WriteLine("Lexer Test:");
+        foreach (var file in files) LexerTest("../../../../Tests/Lexer/" + file);
+
+        var filesP = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
+            .Select(f => Path.GetFileName(f)[..^3]).ToList();
+
+        Console.WriteLine("\nParser Test:");
+        foreach (var file in filesP) ParserTest("../../../../Tests/Parser/" + file);
     }
 }

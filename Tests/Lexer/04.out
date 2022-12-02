@@ -8,7 +8,7 @@
 6  1  Integer  180150015  $ABCDEFF
 7  1  Integer  5  %00000101
 8  1  Integer  342391  &1234567
-8  9  Indificator  Z  Z
+8  9  Identifier  Z  Z
 9  1  Integer  11259375  $ABCDEF
-9  8  Indificator  G  G
+9  8  Identifier  G  G
 9  9  Eof

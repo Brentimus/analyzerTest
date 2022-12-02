@@ -1,18 +1,17 @@
 ﻿using System.Globalization;
 
-class program
+internal class program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
-        
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-        using (StreamReader fileReader = new StreamReader("../../../../test.in"))
+        using (var fileReader = new StreamReader("../../../../test.in"))
         {
-            Parser.Parser parser = new Parser.Parser(fileReader);
+            var parser = new Parser.Parser(fileReader);
             try
             {
-                //parser.ParseExpression().PrintTree();
-                Console.Write(parser.ParseExpression().Calc());
+                parser.ParseExpression().PrintTree("");
+                //Console.Write(parser.ParseExpression().Calc());
             }
             catch (Exception e)
             {

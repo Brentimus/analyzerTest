@@ -1,27 +1,87 @@
 using Lexer;
 
 namespace Parser;
+
 public class Parser
 {
-    private Lex _curLex;
     private readonly ScannerLexer _scan;
+    private Lex _curLex;
+
     public Parser(StreamReader fileReader)
     {
         _scan = new ScannerLexer(fileReader);
         _curLex = _scan.Scanner();
     }
+
+    public Node ParseExpression()
+    {
+        var left = ParseTerm();
+        var lex = _curLex;
+        while (lex.LexType == LexType.Operator &&
+               (Equals(lex.Value, LexToken.Add) || Equals(lex.Value, LexToken.Sub)))
+        {
+            _curLex = _scan.Scanner();
+            left = new BinOp(lex, left, ParseTerm());
+            lex = _curLex;
+        }
+
+        return left;
+    }
+
+    private Node ParseTerm()
+    {
+        var left = ParseFactor();
+        var lex = _curLex;
+        while (lex.LexType == LexType.Operator &&
+               (Equals(lex.Value, LexToken.Mul) || Equals(lex.Value, LexToken.Div)))
+        {
+            _curLex = _scan.Scanner();
+            left = new BinOp(lex, left, ParseFactor());
+            lex = _curLex;
+        }
+
+        return left;
+    }
+
+    private Node ParseFactor()
+    {
+        var lex = _curLex;
+
+        switch (lex.LexType)
+        {
+            case LexType.Integer or LexType.Double:
+                _curLex = _scan.Scanner();
+                return new NumberNode(lex);
+            case LexType.Identifier:
+                _curLex = _scan.Scanner();
+                return new IdNode(lex);
+        }
+
+        if (!Equals(lex.Value, LexToken.Lparen))
+            throw new Exception(_curLex.Line + ":" + _curLex.Column + " Factor expected");
+        _curLex = _scan.Scanner();
+        var e = ParseExpression();
+
+        if (!Equals(_curLex.Value, LexToken.Rparen))
+            throw new Exception(_curLex.Line + ":" + _curLex.Column + " no Rparen");
+        _curLex = _scan.Scanner();
+        return e;
+    }
+
     public abstract class Node
     {
         protected Node(Lex lexeme)
         {
             LexCur = lexeme;
         }
+
         protected Lex LexCur { get; set; }
 
-        public abstract void PrintTree(string treeString = "");
+        public abstract void PrintTree(string branchAscii);
 
         public abstract double Calc();
     }
+
     private class BinOp : Node
     {
         public BinOp(Lex lexCur, Node left, Node right) : base(lexCur)
@@ -30,45 +90,50 @@ public class Parser
             Right = right;
         }
 
-        private Node Right { get; set; }
-        private Node Left { get; set; }
-        
-        public override void PrintTree(string treeString = "")
+        private Node Right { get; }
+        private Node Left { get; }
+
+        public override void PrintTree(string branchAscii)
         {
-            Console.WriteLine($"{treeString}{LexCur.Source}");
-            treeString = treeString.Replace("├───", "│   ");
-            treeString = treeString.Replace("└───", "    ");
-            Left.PrintTree(treeString + "├───");
-            Right.PrintTree(treeString+ "└───");
+            Console.WriteLine(branchAscii + LexCur.Source);
+            branchAscii = branchAscii.Replace("├───", "│   ");
+            branchAscii = branchAscii.Replace("└───", "    ");
+            Left.PrintTree(branchAscii + "├───");
+            Right.PrintTree(branchAscii + "└───");
         }
+
         public override double Calc()
         {
-            switch ((LexValue)LexCur.Value)
+            return (LexToken) LexCur.Value switch
             {
-                case LexValue.Add:
-                    return Left.Calc() + Right.Calc();
-                case LexValue.Sub:
-                    return Left.Calc() - Right.Calc();
-                case LexValue.Mul:
-                    return Left.Calc() * Right.Calc();
-                case LexValue.Div:
-                    return Left.Calc() / Right.Calc();
-            }
-            throw new Exception("error calc");
+                LexToken.Add => Left.Calc() + Right.Calc(),
+                LexToken.Sub => Left.Calc() - Right.Calc(),
+                LexToken.Mul => Left.Calc() * Right.Calc(),
+                LexToken.Div => Left.Calc() / Right.Calc(),
+                _ => throw new Exception("error calc")
+            };
         }
+
         public override string ToString()
         {
             return LexCur.Source;
         }
-        
     }
-    class IdNode : Node
-    {
-        public IdNode(Lex lexeme) : base(lexeme) {}
 
-        public override void PrintTree(string treeString = "")
+    private class IdNode : Node
+    {
+        public IdNode(Lex lexeme) : base(lexeme)
         {
-            Console.WriteLine($"{treeString}{LexCur.Source}");
+        }
+
+        public override void PrintTree(string branchAscii)
+        {
+            Console.WriteLine(branchAscii + LexCur.Source);
+        }
+
+        public override string ToString()
+        {
+            return LexCur.Source;
         }
 
         public override double Calc()
@@ -76,72 +141,26 @@ public class Parser
             throw new NotImplementedException(); // Пока переменные не инициализируется
         }
     }
+
     private class NumberNode : Node
-    { 
-        public NumberNode(Lex lexeme) : base(lexeme) {}
+    {
+        public NumberNode(Lex lexeme) : base(lexeme)
+        {
+        }
+
         public override string ToString()
         {
             return LexCur.Source;
         }
-        
-        public override void PrintTree(string treeString = "")
+
+        public override void PrintTree(string branchAscii)
         {
-            Console.WriteLine($"{treeString}{LexCur.Source}");
+            Console.WriteLine(branchAscii + LexCur.Source);
         }
-        
+
         public override double Calc()
         {
             return double.Parse(LexCur.Source);
         }
-    }
-    public Node ParseExpression()
-    {
-        var left = ParseTerm();
-        var lex = _curLex;
-        while (lex.LexType == LexType.Operator && (lex.Value.ToString() == LexValue.Add.ToString() || lex.Value.ToString() == LexValue.Sub.ToString()))
-        {
-            _curLex = _scan.Scanner();
-            left = new BinOp(lex, left, ParseTerm());
-            lex = _curLex;
-        }
-        return left;
-    }
-    private Node ParseTerm()
-    {
-        var left = ParseFactor();
-        var lex = _curLex;
-        while (lex.LexType == LexType.Operator && (lex.Value.ToString() == LexValue.Mul.ToString()) || (lex.Value.ToString() == LexValue.Div.ToString()))
-        {
-            _curLex = _scan.Scanner();
-            left = new BinOp(lex, left, ParseFactor());
-            lex = _curLex;
-        }
-        return left;
-    }
-    private Node ParseFactor()
-    {
-        var lex = _curLex;
-        
-        if (lex.LexType == LexType.Integer || lex.LexType == LexType.Double)
-        {
-            _curLex = _scan.Scanner();
-            return new NumberNode(lex);
-        }
-        if (lex.LexType == LexType.Indificator)
-        {
-            _curLex = _scan.Scanner();
-            return new IdNode(lex);
-        }
-
-        if (lex.Value.ToString() == LexValue.Lparen.ToString())
-        {
-            _curLex = _scan.Scanner();
-            var e = ParseExpression();
-            if (_curLex.Value.ToString() != LexValue.Rparen.ToString())
-                throw new Exception(_curLex.Line +":"+ _curLex.Column + " no Rparen");
-            _curLex = _scan.Scanner();
-            return e;
-        }
-        throw new Exception(_curLex.Line +":"+ _curLex.Column + " Factor expected");
     }
 }

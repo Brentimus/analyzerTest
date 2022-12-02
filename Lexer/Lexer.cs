@@ -6,65 +6,61 @@ namespace Lexer;
 
 public class ScannerLexer
 {
-    private char[] _sm = new char[1];
-    private char? _back;
-    private States _state;
-    public Lex Lexeme;
-    private StreamReader _sr;
-    public int Line = 1;
-    public int Column;
-    public int Pos;
-    public int baseNum = 10;
     private static string _buf;
     private static string _bufString;
+    private char? _back;
+    private readonly char[] _cur = new char[1];
+    private readonly StreamReader _sr;
+    private States _state;
+    public int baseNum = 10;
+    public int Column;
+    public Lex Lexeme;
+    public int Line = 1;
+    public int Pos;
 
     public ScannerLexer(StreamReader fileReader)
     {
         _sr = fileReader;
     }
-    
+
     private void SkipCommentSpace()
     {
         SkipSpace();
-        if (Peek() == '/' && _sm[0] == '/')
+        if (Peek() == '/' && _cur[0] == '/')
         {
             while (Peek() != '\n')
             {
                 GetNext();
                 if (_sr.EndOfStream)
                 {
-                    _sm = new char[1];
+                    _cur[0] = '\0';
                     break;
                 }
             }
-        } 
-        else if (Peek() == '*' && _sm[0] == '(') 
+        }
+        else if (Peek() == '*' && _cur[0] == '(')
         {
+            GetNext();
             while (true)
             {
-                if (_sr.EndOfStream)
-                {
-                    throw new Exception("comment error");
-                }
+                if (_sr.EndOfStream) throw new Exception("comment error");
                 GetNext();
-                if (Peek() == ')' && _sm[0] == '*')
+                if (Peek() == ')' && _cur[0] == '*')
                 {
                     GetNext();
                     GetNext();
                     break;
                 }
             }
-        } 
-        else if (_sm[0] == '{')
+        }
+        else if (_cur[0] == '{')
         {
-            while (_sm[0] != '}')
+            while (_cur[0] != '}')
             {
-                if (_sr.EndOfStream)
-                {
-                    throw new Exception("comment error");
-                }
+                if (_sr.EndOfStream) throw new Exception("comment error");
                 GetNext();
             }
+
             GetNext();
         }
         else
@@ -72,11 +68,13 @@ public class ScannerLexer
             SkipSpace();
             return;
         }
+
         SkipCommentSpace();
     }
+
     private void SkipSpace()
     {
-        switch (_sm[0])
+        switch (_cur[0])
         {
             case '\n':
             case '\t':
@@ -85,46 +83,52 @@ public class ScannerLexer
             case '\0':
                 if (_sr.EndOfStream)
                 {
-                    _sm = new char[1];
+                    _cur[0] = '\0';
                     break;
                 }
+
                 GetNext();
                 SkipSpace();
                 break;
         }
     }
+
     private void GetNext()
     {
         if (_back != null)
         {
-            _sm[0] = (char) _back;
+            _cur[0] = (char) _back;
             _back = null;
         }
-        else
-            if (!_sr.EndOfStream)
+        else if (!_sr.EndOfStream)
+        {
+            _sr.Read(_cur, 0, 1);
+            if (_cur[0] == '\n')
             {
-                _sr.Read(_sm, 0, 1);
-                if (_sm[0] == '\n')
-                {
-                    Column = 0;
-                    Line++;
-                }
-                else
-                    Column++;
+                Column = 0;
+                Line++;
             }
             else
-                _sm = new char[1];
+            {
+                Column++;
+            }
+        }
+        else
+        {
+            _cur[0] = '\0';
+        }
+    }
 
-    }
-    void Back()
+    private void Back()
     {
-        _back = _sm[0];
+        _back = _cur[0];
     }
+
     private char Peek()
     {
         return (char) _sr.Peek();
     }
-    
+
     private static void ClearBuf()
     {
         _buf = "";
@@ -135,12 +139,9 @@ public class ScannerLexer
         _buf += symbol;
     }
 
-    private string SearchLex()
+    private object SearchKeyword()
     {
-        if (Enum.TryParse(_buf, true, out KeyWords keyWords))
-        {
-            return Enum.Parse(typeof(KeyWords), _buf, true).ToString().ToLower();
-        }
+        if (Enum.TryParse(_buf, true, out KeyWords keyWords)) return Enum.Parse(typeof(KeyWords), _buf, true);
         return "";
     }
 
@@ -173,19 +174,17 @@ public class ScannerLexer
                         GetNext();
                         if (Peek() != '.')
                         {
-                            string bufNum = _buf;
+                            var bufNum = _buf;
                             _buf = Convert.ToInt64(_buf, baseNum).ToString();
-                            AddBuf(_sm[0]);
-                            bufNum += _sm[0];
-                            /*if (!char.IsDigit(Peek()))
-                                throw new Exception("invalid Double");*/
+                            AddBuf(_cur[0]);
+                            bufNum += _cur[0];
+
                             while (true)
-                            {
                                 if (char.IsDigit(Peek()))
                                 {
                                     GetNext();
-                                    AddBuf(_sm[0]);
-                                    bufNum += _sm[0];
+                                    AddBuf(_cur[0]);
+                                    bufNum += _cur[0];
                                 }
                                 else
                                 {
@@ -197,7 +196,6 @@ public class ScannerLexer
                                     _state = States.Fin;
                                     return;
                                 }
-                            }
                         }
 
                         Back();
@@ -206,7 +204,7 @@ public class ScannerLexer
                     if (IsDigit(Peek(), baseNum))
                     {
                         GetNext();
-                        AddBuf(_sm[0]);
+                        AddBuf(_cur[0]);
                     }
                     else
                     {
@@ -220,103 +218,77 @@ public class ScannerLexer
 
             case States.Id:
                 while (_state == States.Id)
-                {
-                    if (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+                    if (char.IsLetterOrDigit(Peek()) || Peek() == '_')
                     {
                         GetNext();
-                        AddBuf(_sm[0]);
+                        AddBuf(_cur[0]);
                     }
                     else
                     {
-                        var searchLex = SearchLex();
-
-                        if (searchLex != "")
-                            switch (searchLex)
-                            {
-                                case "shr":
-                                    AddLex(LexType.Operator, KeyWords.Shr, _buf);
-                                    break;
-                                case "shl":
-                                    AddLex(LexType.Operator, KeyWords.Shl, _buf);
-                                    break;
-                                case "div":
-                                    AddLex(LexType.Operator, LexValue.Div, _buf);
-                                    break;
-                                case "mod":
-                                    AddLex(LexType.Operator, KeyWords.Mod, _buf);
-                                    break;
-                                case "or":
-                                    AddLex(LexType.Operator, KeyWords.Or, _buf);
-                                    break;
-                                case "xor":
-                                    AddLex(LexType.Operator, KeyWords.Xor, _buf);
-                                    break;
-                                case "not":
-                                    AddLex(LexType.Operator, KeyWords.Not, _buf);
-                                    break;
-                                case "and":
-                                    AddLex(LexType.Operator, KeyWords.And, _buf);
-                                    break;
-                                default:
-                                    AddLex(LexType.Keyword, searchLex.ToUpper(), _buf);
-                                    break;
-                            }
+                        var searchKeyword = SearchKeyword();
+                        if (searchKeyword.ToString().ToLower() != "")
+                            AddLex(LexType.Keyword, searchKeyword.ToString().ToUpper(), _buf);
                         else
-                        {
-                            AddLex(LexType.Indificator, _buf, _buf);
-                        }
+                            AddLex(LexType.Identifier, _buf, _buf);
 
                         _state = States.Fin;
                     }
-                }
 
                 break;
 
             case States.Opr:
-                switch (_sm[0])
+                switch (_cur[0])
                 {
                     case '-':
                         if (Peek() == '=')
                         {
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.AssignSub, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.AssignSub, _buf);
                         }
                         else
-                            AddLex(LexType.Operator, LexValue.Sub, _buf);
+                        {
+                            AddLex(LexType.Operator, LexToken.Sub, _buf);
+                        }
 
                         break;
                     case '+':
                         if (Peek() == '=')
                         {
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.AssignAdd, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.AssignAdd, _buf);
                         }
                         else
-                            AddLex(LexType.Operator, LexValue.Add, _buf);
+                        {
+                            AddLex(LexType.Operator, LexToken.Add, _buf);
+                        }
 
                         break;
                     case '*':
                         if (Peek() == '=')
                         {
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.AssignMul, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.AssignMul, _buf);
                         }
                         else
-                            AddLex(LexType.Operator, LexValue.Mul, _buf);
+                        {
+                            AddLex(LexType.Operator, LexToken.Mul, _buf);
+                        }
 
                         break;
                     case '/':
                         if (Peek() == '=')
                         {
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.AssignDiv, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.AssignDiv, _buf);
                         }
                         else
-                            AddLex(LexType.Operator, LexValue.Div, _buf);
+                        {
+                            AddLex(LexType.Operator, LexToken.Div, _buf);
+                        }
 
                         break;
                 }
@@ -327,14 +299,14 @@ public class ScannerLexer
             case States.Chr:
                 while (true)
                 {
-                    string _localChar = "";
+                    var _localChar = "";
                     if (!char.IsDigit(Peek()))
                         throw new Exception("Char error");
 
                     while (char.IsDigit(Peek()))
                     {
                         GetNext();
-                        _localChar += _sm[0];
+                        _localChar += _cur[0];
                     }
 
                     _bufString += '#' + _localChar;
@@ -344,6 +316,7 @@ public class ScannerLexer
                     else
                         break;
                 }
+
                 if (Peek() == (char) 39)
                 {
                     GetNext();
@@ -360,10 +333,11 @@ public class ScannerLexer
                     AddLex(LexType.String, _buf, _bufString);
                     _bufString = "";
                 }
+
                 break;
 
             case States.Str:
-                string _localString = "";
+                var _localString = "";
                 while (Peek() != (char) 39)
                 {
                     if (_sr.EndOfStream)
@@ -371,12 +345,13 @@ public class ScannerLexer
                     if (Peek() == '\n')
                         throw new Exception("String line error");
                     GetNext();
-                    AddBuf(_sm[0]);
-                    _localString +=_sm[0];
+                    AddBuf(_cur[0]);
+                    _localString += _cur[0];
                 }
+
                 _bufString += (char) 39 + _localString + (char) 39;
                 GetNext();
-                
+
                 if (Peek() == (char) 39)
                 {
                     GetNext();
@@ -395,17 +370,18 @@ public class ScannerLexer
                     _bufString = "";
                     _state = States.Fin;
                 }
+
                 break;
-            
+
             case States.Eof:
                 Lexeme = new Lex(LexType.Eof, "", "", Line, ++Pos);
                 break;
 
             case States.Er:
-                throw new Exception("invalid symbol "+_sm[0]);
+                throw new Exception("invalid symbol " + _cur[0]);
         }
     }
-    
+
     public Lex Scanner()
     {
         _state = States.Fin;
@@ -414,19 +390,19 @@ public class ScannerLexer
         Pos = Column;
         baseNum = 10;
         ClearBuf();
-        if (Char.IsLetter(_sm[0]) || _sm[0] == '_')
+        if (char.IsLetter(_cur[0]) || _cur[0] == '_')
         {
-            AddBuf(_sm[0]);
+            AddBuf(_cur[0]);
             _state = States.Id;
         }
-        else if (char.IsDigit(_sm[0]))
+        else if (char.IsDigit(_cur[0]))
         {
-            AddBuf(_sm[0]);
+            AddBuf(_cur[0]);
             _state = States.Num;
-        } 
+        }
         else
         {
-            switch (_sm[0])
+            switch (_cur[0])
             {
                 case '%':
                     baseNum = 2;
@@ -446,107 +422,108 @@ public class ScannerLexer
                 case '#':
                     _state = States.Chr;
                     break;
-                case (char)39:
+                case (char) 39:
                     _state = States.Str;
                     break;
                 case ';':
-                    AddLex(LexType.Separator, LexValue.Semicolom, _sm[0].ToString());
+                    AddLex(LexType.Separator, LexToken.Semicolom, _cur[0].ToString());
                     break;
                 case '=':
-                    AddLex(LexType.Operator, LexValue.Equal, _sm[0].ToString());
+                    AddLex(LexType.Operator, LexToken.Equal, _cur[0].ToString());
                     break;
                 case ',':
-                    AddLex(LexType.Separator, LexValue.Comma, _sm[0].ToString());
+                    AddLex(LexType.Separator, LexToken.Comma, _cur[0].ToString());
                     break;
                 case ')':
-                    AddLex(LexType.Separator, LexValue.Rparen, _sm[0].ToString());
+                    AddLex(LexType.Separator, LexToken.Rparen, _cur[0].ToString());
                     break;
                 case '[':
-                    AddLex(LexType.Separator, LexValue.Lbrack, _sm[0].ToString());
+                    AddLex(LexType.Separator, LexToken.Lbrack, _cur[0].ToString());
                     break;
                 case ']':
-                    AddLex(LexType.Separator, LexValue.Rbrack, _sm[0].ToString());
+                    AddLex(LexType.Separator, LexToken.Rbrack, _cur[0].ToString());
                     break;
                 case '(':
-                    AddLex(LexType.Separator, LexValue.Lparen, _sm[0].ToString());
+                    AddLex(LexType.Separator, LexToken.Lparen, _cur[0].ToString());
                     break;
                 case ':':
-                    AddBuf(_sm[0]);
+                    AddBuf(_cur[0]);
                     switch (Peek())
                     {
                         case '=':
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.Implicit, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.Assign, _buf);
                             break;
                         default:
-                            AddLex(LexType.Separator, LexValue.Colon, _sm[0].ToString());
+                            AddLex(LexType.Separator, LexToken.Colon, _cur[0].ToString());
                             break;
                     }
+
                     break;
                 case '<':
-                    AddBuf(_sm[0]);
+                    AddBuf(_cur[0]);
                     switch (Peek())
                     {
                         case '>':
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.NoEqual, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.NoEqual, _buf);
                             break;
                         case '=':
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.LessEqual, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.LessEqual, _buf);
                             break;
                         default:
-                            AddLex(LexType.Operator, LexValue.Less, _sm[0].ToString());
+                            AddLex(LexType.Operator, LexToken.Less, _cur[0].ToString());
                             break;
                     }
+
                     break;
                 case '>':
-                    AddBuf(_sm[0]);
+                    AddBuf(_cur[0]);
                     switch (Peek())
                     {
                         case '=':
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Operator, LexValue.MoreEqual, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Operator, LexToken.MoreEqual, _buf);
                             break;
                         default:
-                            AddLex(LexType.Operator, LexValue.More, _sm[0].ToString());
+                            AddLex(LexType.Operator, LexToken.More, _cur[0].ToString());
                             break;
                     }
+
                     break;
                 case '.':
-                    AddBuf(_sm[0]);
+                    AddBuf(_cur[0]);
                     switch (Peek())
                     {
                         case '.':
                             GetNext();
-                            AddBuf(_sm[0]);
-                            AddLex(LexType.Separator, LexValue.Doubledot, _buf);
+                            AddBuf(_cur[0]);
+                            AddLex(LexType.Separator, LexToken.Doubledot, _buf);
                             break;
                         default:
-                            AddLex(LexType.Separator, LexValue.Dot, _buf);
+                            AddLex(LexType.Separator, LexToken.Dot, _buf);
                             break;
                     }
+
                     break;
-                case '+':
-                case '-':
-                case '/':
-                case '*':
-                    AddBuf(_sm[0]);
+                case '+' or '-' or '/' or '*':
+                    AddBuf(_cur[0]);
                     _state = States.Opr;
                     break;
+                case '\0' when _sr.EndOfStream:
+                    _state = States.Eof;
+                    break;
                 default:
-                    if (_sm[0] == '\0' && _sr.EndOfStream)
-                    {
-                        _state = States.Eof;
-                    } else
-                        _state = States.Er;
+                    _state = States.Er;
                     break;
             }
         }
+
         State();
         return Lexeme;
     }

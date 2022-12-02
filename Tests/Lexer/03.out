@@ -16,5 +16,5 @@
 15  1  Operator  More  >
 15  2  Operator  More  >
 16  1  Operator  MoreEqual  >=
-17  1  Operator  Implicit  :=
+17  1  Operator  Assign  :=
 17  3  Eof
