@@ -4,13 +4,13 @@ namespace Parser;
 
 public class Parser
 {
-    private readonly ScannerLexer _scan;
+    private readonly Scanner _scan;
     private Lex _curLex;
 
     public Parser(StreamReader fileReader)
     {
-        _scan = new ScannerLexer(fileReader);
-        _curLex = _scan.Scanner();
+        _scan = new Scanner(fileReader);
+        _curLex = _scan.ScannerLex();
     }
 
     public Node ParseExpression()
@@ -20,7 +20,7 @@ public class Parser
         while (lex.LexType == LexType.Operator &&
                (Equals(lex.Value, LexToken.Add) || Equals(lex.Value, LexToken.Sub)))
         {
-            _curLex = _scan.Scanner();
+            _curLex = _scan.ScannerLex();
             left = new BinOp(lex, left, ParseTerm());
             lex = _curLex;
         }
@@ -35,7 +35,7 @@ public class Parser
         while (lex.LexType == LexType.Operator &&
                (Equals(lex.Value, LexToken.Mul) || Equals(lex.Value, LexToken.Div)))
         {
-            _curLex = _scan.Scanner();
+            _curLex = _scan.ScannerLex();
             left = new BinOp(lex, left, ParseFactor());
             lex = _curLex;
         }
@@ -50,21 +50,21 @@ public class Parser
         switch (lex.LexType)
         {
             case LexType.Integer or LexType.Double:
-                _curLex = _scan.Scanner();
+                _curLex = _scan.ScannerLex();
                 return new NumberNode(lex);
             case LexType.Identifier:
-                _curLex = _scan.Scanner();
+                _curLex = _scan.ScannerLex();
                 return new IdNode(lex);
         }
 
         if (!Equals(lex.Value, LexToken.Lparen))
             throw new Exception(_curLex.Line + ":" + _curLex.Column + " Factor expected");
-        _curLex = _scan.Scanner();
+        _curLex = _scan.ScannerLex();
         var e = ParseExpression();
 
         if (!Equals(_curLex.Value, LexToken.Rparen))
             throw new Exception(_curLex.Line + ":" + _curLex.Column + " no Rparen");
-        _curLex = _scan.Scanner();
+        _curLex = _scan.ScannerLex();
         return e;
     }
 

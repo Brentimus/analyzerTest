@@ -4,27 +4,27 @@ using System.IO;
 using System.Threading;
 using Lexer;
 
-internal class Program
+internal class Program : Buffer
 {
     private static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         using (var fileReader = new StreamReader("../../../../test.in"))
         {
-            var scan = new ScannerLexer(fileReader);
+            var scan = new Scanner(fileReader);
             while (!fileReader.EndOfStream)
                 try
                 {
-                    Console.WriteLine(scan.Scanner());
+                    Console.WriteLine(scan.ScannerLex());
                 }
-                catch (Exception e)
+                catch (LexException e)
                 {
-                    Console.Write(scan.Line + "  " + scan.Pos + "  " + e.Message);
+                    Console.Write(e.Message);
                     return;
                 }
 
             if (scan.Lexeme.LexType != LexType.Eof)
-                Console.Write(scan.Scanner());
+                Console.Write(scan.ScannerLex());
         }
     }
 }

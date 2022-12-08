@@ -52,7 +52,7 @@ internal class Program
     public static void LexerTest(string pathFile)
     {
         var fileReaderIn = new StreamReader(pathFile + ".in");
-        var scan = new ScannerLexer(fileReaderIn);
+        var scan = new Scanner(fileReaderIn);
         var fileReaderOut = new StreamReader(pathFile + ".out");
         while (!fileReaderIn.EndOfStream)
         {
@@ -60,7 +60,7 @@ internal class Program
             line = fileReaderOut.ReadLine();
             try
             {
-                var found = scan.Scanner().ToString();
+                var found = scan.ScannerLex().ToString();
                 if (line != found)
                 {
                     Console.WriteLine(pathFile + '\t' + "WA");
@@ -69,9 +69,9 @@ internal class Program
                     Environment.Exit(0);
                 }
             }
-            catch (Exception e)
+            catch (LexException e)
             {
-                var found = scan.Line + "  " + scan.Pos + "  " + e.Message;
+                var found = e.Message;
                 if (line != found)
                 {
                     Console.WriteLine(pathFile + '\t' + "WA");
