@@ -97,7 +97,7 @@ public class Scanner : Buffer
 
     private object SearchKeyword()
     {
-        if (Enum.TryParse(_buf, true, out KeyWords keyWords)) return Enum.Parse(typeof(KeyWords), _buf, true);
+        if (Enum.TryParse(_buf, true, out LexKeywords keyWords)) return Enum.Parse(typeof(LexKeywords), _buf, true);
         return "";
     }
 
@@ -113,7 +113,8 @@ public class Scanner : Buffer
             10 => c is >= '0' and <= '9',
             16 => c is >= '0' and <= '9' or >= 'A' and <= 'F' or >= 'a' and <= 'f',
             8 => c is >= '0' and <= '7',
-            2 => c is >= '0' and <= '1'
+            2 => c is >= '0' and <= '1',
+            _ => throw new LexException(Position, "number base error")
         };
     }
 
@@ -152,7 +153,6 @@ public class Scanner : Buffer
                                     return;
                                 }
                         }
-
                         Back();
                     }
 
@@ -199,11 +199,11 @@ public class Scanner : Buffer
                         {
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.AssignSub, _buf);
+                            AddLex(LexType.Operator, LexOperator.AssignSub, _buf);
                         }
                         else
                         {
-                            AddLex(LexType.Operator, LexToken.Sub, _buf);
+                            AddLex(LexType.Operator, LexOperator.Sub, _buf);
                         }
 
                         break;
@@ -212,11 +212,11 @@ public class Scanner : Buffer
                         {
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.AssignAdd, _buf);
+                            AddLex(LexType.Operator, LexOperator.AssignAdd, _buf);
                         }
                         else
                         {
-                            AddLex(LexType.Operator, LexToken.Add, _buf);
+                            AddLex(LexType.Operator, LexOperator.Add, _buf);
                         }
 
                         break;
@@ -225,11 +225,11 @@ public class Scanner : Buffer
                         {
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.AssignMul, _buf);
+                            AddLex(LexType.Operator, LexOperator.AssignMul, _buf);
                         }
                         else
                         {
-                            AddLex(LexType.Operator, LexToken.Mul, _buf);
+                            AddLex(LexType.Operator, LexOperator.Mul, _buf);
                         }
 
                         break;
@@ -238,11 +238,11 @@ public class Scanner : Buffer
                         {
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.AssignDiv, _buf);
+                            AddLex(LexType.Operator, LexOperator.AssignDiv, _buf);
                         }
                         else
                         {
-                            AddLex(LexType.Operator, LexToken.Div, _buf);
+                            AddLex(LexType.Operator, LexOperator.Div, _buf);
                         }
 
                         break;
@@ -381,25 +381,25 @@ public class Scanner : Buffer
                     _state = States.Str;
                     break;
                 case ';':
-                    AddLex(LexType.Separator, LexToken.Semicolom, _cur.ToString());
+                    AddLex(LexType.Separator, LexSeparator.Semicolom, _cur.ToString());
                     break;
                 case '=':
-                    AddLex(LexType.Operator, LexToken.Equal, _cur.ToString());
+                    AddLex(LexType.Operator, LexOperator.Equal, _cur.ToString());
                     break;
                 case ',':
-                    AddLex(LexType.Separator, LexToken.Comma, _cur.ToString());
+                    AddLex(LexType.Separator, LexSeparator.Comma, _cur.ToString());
                     break;
                 case ')':
-                    AddLex(LexType.Separator, LexToken.Rparen, _cur.ToString());
+                    AddLex(LexType.Separator, LexSeparator.Rparen, _cur.ToString());
                     break;
                 case '[':
-                    AddLex(LexType.Separator, LexToken.Lbrack, _cur.ToString());
+                    AddLex(LexType.Separator, LexSeparator.Lbrack, _cur.ToString());
                     break;
                 case ']':
-                    AddLex(LexType.Separator, LexToken.Rbrack, _cur.ToString());
+                    AddLex(LexType.Separator, LexSeparator.Rbrack, _cur.ToString());
                     break;
                 case '(':
-                    AddLex(LexType.Separator, LexToken.Lparen, _cur.ToString());
+                    AddLex(LexType.Separator, LexSeparator.Lparen, _cur.ToString());
                     break;
                 case ':':
                     AddBuf(_cur);
@@ -408,10 +408,10 @@ public class Scanner : Buffer
                         case '=':
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.Assign, _buf);
+                            AddLex(LexType.Operator, LexOperator.Assign, _buf);
                             break;
                         default:
-                            AddLex(LexType.Separator, LexToken.Colon, _cur.ToString());
+                            AddLex(LexType.Separator, LexSeparator.Colon, _cur.ToString());
                             break;
                     }
 
@@ -423,15 +423,15 @@ public class Scanner : Buffer
                         case '>':
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.NoEqual, _buf);
+                            AddLex(LexType.Operator, LexOperator.NoEqual, _buf);
                             break;
                         case '=':
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.LessEqual, _buf);
+                            AddLex(LexType.Operator, LexOperator.LessEqual, _buf);
                             break;
                         default:
-                            AddLex(LexType.Operator, LexToken.Less, _cur.ToString());
+                            AddLex(LexType.Operator, LexOperator.Less, _cur.ToString());
                             break;
                     }
 
@@ -443,10 +443,10 @@ public class Scanner : Buffer
                         case '=':
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Operator, LexToken.MoreEqual, _buf);
+                            AddLex(LexType.Operator, LexOperator.MoreEqual, _buf);
                             break;
                         default:
-                            AddLex(LexType.Operator, LexToken.More, _cur.ToString());
+                            AddLex(LexType.Operator, LexOperator.More, _cur.ToString());
                             break;
                     }
 
@@ -458,10 +458,10 @@ public class Scanner : Buffer
                         case '.':
                             GetNext();
                             AddBuf(_cur);
-                            AddLex(LexType.Separator, LexToken.Doubledot, _buf);
+                            AddLex(LexType.Separator, LexSeparator.Doubledot, _buf);
                             break;
                         default:
-                            AddLex(LexType.Separator, LexToken.Dot, _buf);
+                            AddLex(LexType.Separator, LexSeparator.Dot, _buf);
                             break;
                     }
 

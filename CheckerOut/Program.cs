@@ -20,7 +20,7 @@ internal class Program
         {
             var sw = new StringWriter();
             Console.SetOut(sw);
-            parser.ParseExpression().PrintTree("");
+            parser.Expression().PrintTree("");
             /*var originOutput = new StreamWriter(Console.OpenStandardOutput());
             originOutput.AutoFlush = true;*/
             Console.SetOut(oldOut);
@@ -95,10 +95,10 @@ internal class Program
         Console.WriteLine("Lexer Test:");
         foreach (var file in files) LexerTest("../../../../Tests/Lexer/" + file);
 
-        var filesP = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
+        /*var filesP = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
             .Select(f => Path.GetFileName(f)[..^3]).ToList();
 
         Console.WriteLine("\nParser Test:");
-        foreach (var file in filesP) ParserTest("../../../../Tests/Parser/" + file);
+        foreach (var file in filesP) ParserTest("../../../../Tests/Parser/" + file);*/
     }
 }

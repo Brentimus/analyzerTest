@@ -13,7 +13,7 @@ public enum LexType
     Separator
 }
 
-public enum LexToken
+public enum LexOperator
 {
     Assign,
     AssignAdd,
@@ -30,6 +30,10 @@ public enum LexToken
     NoEqual,
     LessEqual,
     MoreEqual,
+}
+
+public enum LexSeparator
+{
     Comma,
     Dot,
     Doubledot,
@@ -53,7 +57,7 @@ internal enum States
     Chr
 }
 
-internal enum KeyWords
+public enum LexKeywords
 {
     AND,
     ARRAY,

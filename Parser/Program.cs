@@ -10,8 +10,8 @@ internal class program
             var parser = new Parser.Parser(fileReader);
             try
             {
-                parser.ParseExpression().PrintTree("");
-                //Console.Write(parser.ParseExpression().Calc());
+                parser.Expression().PrintTree("");
+                //Console.Write(parser.Expression().Calc());
             }
             catch (Exception e)
             {
