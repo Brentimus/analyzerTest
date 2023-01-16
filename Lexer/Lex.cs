@@ -49,4 +49,12 @@ public class Lex
     {
         return LexType == type;
     }
+
+    public void ConvertToId(Lex lex)
+    {
+        if (lex.Is(LexType.Keyword))
+        {
+            lex.Value = LexType.ToString().ToLower();
+        }
+    }
 }

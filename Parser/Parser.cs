@@ -218,7 +218,7 @@ public partial class Parser
             }
         }
 
-        //var compound = CompoundStatement();
+        var compound = CompoundStatement();
         return new BlockNode(declarations, compound);
     }
     public VarDeclsNode VarDecls()

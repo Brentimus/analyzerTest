@@ -82,6 +82,7 @@ public partial class Parser
         Eat();
         return e;
     }
+
     private ExpressionNode VarRef()
     {
         var left = Id() as ExpressionNode;
@@ -97,12 +98,13 @@ public partial class Parser
                 {
                     args = ExpressionList();
                 }
+
                 left = new ArrayAccess(left, args);
                 Require(LexSeparator.Rparen);
                 lex = _curLex;
             }
             else if (lex.Is(LexSeparator.Dot))
-            { 
+            {
                 //RecordAccess
                 Eat();
                 left = new RecordAccess(left, Id());
@@ -113,15 +115,15 @@ public partial class Parser
                 //FunctionCall
                 Eat();
                 List<ExpressionNode> args = new List<ExpressionNode>();
-                
+
                 if (!lex.Is(LexSeparator.Rparen))
                 {
                     args = ExpressionList();
                 }
                 //left = new FunctionCall();
-                
+
                 Require(LexSeparator.Rparen);
-                
+
                 lex = _curLex;
             }
             else
@@ -130,23 +132,7 @@ public partial class Parser
             }
         }
     }
-    public List<ExpressionNode> ExpressionList()
-    {
-        var exps = new List<ExpressionNode>();
 
-        while (true)
-        {
-            exps.Add(Expression());
-            if (!_curLex.Is(LexSeparator.Comma))
-                break;
-            Eat();
-        }
-
-        if (exps == null)
-            throw new("null expression");
-        
-        return exps;
-    }
     public class ArrayAccess : ExpressionNode
     {
         public ArrayAccess(ExpressionNode arrayId, List<ExpressionNode> arrayExp) : base()
@@ -206,9 +192,9 @@ public partial class Parser
     
     public class IdNode : ExpressionNode
     {
-        public IdNode(Lex lexeme) : base()
+        public IdNode(Lex lexCur)
         {
-            LexCur = lexeme;
+            LexCur = lexCur;
         }
 
         public void PrintTree(string branchAscii)
@@ -272,22 +258,5 @@ public partial class Parser
 
         protected Lex LexCur { get; set; }
     }
-    public List<IdNode> IdList()
-    {
-        var ids = new List<IdNode>();
-
-        while (true)
-        {
-            ids.Add(Id());
-            Eat();
-            if (!_curLex.Is(LexSeparator.Comma))
-                break;
-            Eat();
-        }
-
-        if (ids == null)
-            throw new("null Identifier");
-        
-        return ids;
-    }
+    
 }

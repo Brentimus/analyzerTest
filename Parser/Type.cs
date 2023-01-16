@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Lexer;
 using Parser.Sym;
 
@@ -10,24 +9,34 @@ public partial class Parser
     {
         var lex = _curLex;
         if (lex.Is(LexType.Identifier))
+        {
             return PrimitiveType();
+        }
         if (lex.Is(LexKeywords.ARRAY))
+        {
+            Eat();
             return ArrayType();
+        }
 
+        if (lex.Is(LexKeywords.RECORD))
+        {
+            Eat();
+            return RecordType();
+        }
+        throw new Exception("");
     }
 
     public SymType PrimitiveType()
     {
         if (_curLex.Is(LexKeywords.STRING))
-            return new SymType(Keyword().ToString()); //Maybe wrong
+            return new SymType(_curLex.Value.ToString()!); //TODO: Maybe wrong
         return new SymType(Id().ToString());
     }
 
     public SymArray ArrayType()
     {
-        Eat();
         Require(LexSeparator.Lbrack);
-        var range = TypeRange();
+        var range = TypeRanges();
         Require(LexSeparator.Rbrack);
         Require(LexKeywords.OF);
         var type = Type();
@@ -44,6 +53,7 @@ public partial class Parser
             {
                 break;
             }
+
             Eat();
             ranges.Add(TypeRange());
         }
@@ -59,22 +69,76 @@ public partial class Parser
         return new TypeRangeNode(begin, end);
     }
 
-    public class TypeRangeNode : ExpressionNode
+    public class TypeRangeNode : Node
     {
         public TypeRangeNode(ExpressionNode begin, ExpressionNode end)
         {
-            RangeTuple = new Tuple<ExpressionNode, ExpressionNode>(begin,end);
+            Begin = begin;
+            End = end;
         }
-        public Tuple<ExpressionNode,ExpressionNode> RangeTuple { get; set; }
-        
+
+        public ExpressionNode Begin { get; }
+        public ExpressionNode End { get; }
     }
 
-    public class FieldSelection : IdNode
+    public SymRecord RecordType()
     {
-        public FieldSelection(Lex lexeme) : base(lexeme)
+        var fieldList = new List<FieldSelectionNode>();
+        Require(LexKeywords.RECORD);
+        if (!_curLex.Is(LexKeywords.END))
         {
+            fieldList = FieldList();
         }
-        
+
+        Require(LexKeywords.END);
+        var table = new SymTable();
+        foreach (var field in fieldList)
+        {
+            foreach (var idNode in field.Ids)
+            {
+                // TODO: get name in lower
+                table.Push(new SymVar(idNode.ToString().ToLower(), field.Type), true);
+            }
+        }
+
+        return new SymRecord(table);
     }
-    
+
+    public List<FieldSelectionNode> FieldList()
+    {
+        var fields = new List<FieldSelectionNode>();
+        fields.Add(FieldSelection());
+        while (true)
+        {
+            if (!_curLex.Is(LexSeparator.Semicolom))
+            {
+                break;
+            }
+
+            Eat();
+            fields.Add(FieldSelection());
+        }
+
+        return fields;
+    }
+
+    public FieldSelectionNode FieldSelection()
+    {
+        var ids = IdList();
+        Require(LexSeparator.Colon);
+        var type = Type();
+        return new FieldSelectionNode(ids, type);
+    }
+
+    public class FieldSelectionNode : Node
+    {
+        public FieldSelectionNode(List<IdNode> ids, SymType type)
+        {
+            Ids = ids;
+            Type = type;
+        }
+
+        public List<IdNode> Ids { get; }
+        public SymType Type { get; }
+    }
 }

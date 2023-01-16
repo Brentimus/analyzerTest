@@ -138,7 +138,7 @@ public class SymRecord : SymType
         {
             return false;
         }
-        
+
         // TODO:
 
         return true;
@@ -148,9 +148,9 @@ public class SymRecord : SymType
 public class SymArray : SymType
 {
     public SymType Type { get; }
-    public Parser.TypeRangeNode Range { get; }
+    public List<Parser.TypeRangeNode> Range { get; }
 
-    public SymArray(SymType type, Parser.TypeRangeNode range) : base("array")
+    public SymArray(SymType type, List<Parser.TypeRangeNode> range) : base("array")
     {
         Type = type;
         Range = range;
@@ -190,8 +190,13 @@ public class SymTable
         Data = new OrderedDictionary();
     }
 
-    public void Push(Sym sym)
+    public void Push(Sym sym, bool is_parser = false)
     {
+        if (is_parser && Contains(sym.Name))
+        {
+            return;
+        }
+
         if (Contains(sym.Name))
         {
             throw new Exception();
