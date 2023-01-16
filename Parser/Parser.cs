@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Linq.Expressions;
 using Lexer;
+using Parser.Sym;
 
 namespace Parser;
 
@@ -31,10 +32,6 @@ public partial class Parser
         }
     }
     
-    
-    public abstract class TypeNode : Node
-    {
-    }
 
     public abstract class ExpressionNode : Node
     {
@@ -94,36 +91,17 @@ public partial class Parser
     public class VarDeclNode : DeclarationNode
     {
         public List<IdNode> ids { get; }
-        public TypeNode type { get; }
+        public SymType type { get; }
         public ExpressionNode? exp { get; }
 
-        public VarDeclNode(List<IdNode> ids, TypeNode type, ExpressionNode? exp)
+        public VarDeclNode(List<IdNode> ids, SymType type, ExpressionNode? exp)
         {
             this.ids = ids;
             this.type = type;
             this.exp = exp;
         }
-
-        public void PrintTree(string branchAscii)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    public class PrimitiveTypeNode : TypeNode
-    {
-        public PrimitiveTypeNode(Node typeId)
-        {
-            TypeId = typeId;
-        }
-
-        public Node TypeId { get; }
-        public void PrintTree(string branchAscii)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    
     public class VarDeclsNode : DeclarationNode
     {
         public List<VarDeclNode> dels { get; }
@@ -357,7 +335,7 @@ public partial class Parser
         return new IdNode(Eat());
     }
 
-    public Node Keyword()
+    public KeywordNode Keyword()
     {
         var lex = _curLex;
         Eat();

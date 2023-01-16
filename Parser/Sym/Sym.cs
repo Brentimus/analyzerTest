@@ -18,7 +18,7 @@ public abstract class Sym : ITreePrintable
     }
 }
 
-public abstract class SymType : Sym
+public class SymType : Sym
 {
     public SymType(string name) : base(name)
     {
@@ -148,14 +148,12 @@ public class SymRecord : SymType
 public class SymArray : SymType
 {
     public SymType Type { get; }
-    public Parser.ExpressionNode Begin { get; }
-    public Parser.ExpressionNode End { get; }
+    public Parser.TypeRangeNode Range { get; }
 
-    public SymArray(SymType type, Parser.ExpressionNode begin, Parser.ExpressionNode end) : base("array")
+    public SymArray(SymType type, Parser.TypeRangeNode range) : base("array")
     {
         Type = type;
-        Begin = begin;
-        End = end;
+        Range = range;
     }
 }
 

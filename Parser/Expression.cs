@@ -69,6 +69,7 @@ public partial class Parser
             case LexType.Keyword:
                 if (lex.Is(LexKeywords.TRUE, LexKeywords.FALSE))
                     return new BooleanNode(lex);
+                break;
         }
 
         if (lex.Is(LexSeparator.Lparen))
@@ -156,7 +157,7 @@ public partial class Parser
 
         public ExpressionNode ArrayId { get; set;}
         public List<ExpressionNode> ArrayExp { get; set;}
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             Console.WriteLine(branchAscii + ArrayId + ArrayExp);
         }
@@ -176,7 +177,7 @@ public partial class Parser
         public ExpressionNode RecordId { get; set; }
         public IdNode Field { get; set; }
         
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             Console.WriteLine(branchAscii + RecordId);
             branchAscii = branchAscii.Replace("├───", "│   ");
@@ -189,7 +190,6 @@ public partial class Parser
             return Field.ToString();
         }
     }
-    
     public class FunctionCall : ExpressionNode
     {
         public FunctionCall() : base()
@@ -198,11 +198,12 @@ public partial class Parser
 
         public ExpressionNode ArrayId { get; set;}
         public List<ExpressionNode> ArrayExp { get; set;}
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             throw new NotImplementedException();
         }
     }
+    
     public class IdNode : ExpressionNode
     {
         public IdNode(Lex lexeme) : base()
@@ -210,19 +211,18 @@ public partial class Parser
             LexCur = lexeme;
         }
 
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             Console.WriteLine(branchAscii + LexCur.Source);
         }
 
-        protected Lex LexCur { get; set; }
+        public Lex LexCur { get; set; }
 
         public override string ToString()
         {
             return LexCur.Source;
         }
     }
-
     public class BooleanNode : ExpressionNode
     {
         public BooleanNode(Lex lexCur)
@@ -232,7 +232,7 @@ public partial class Parser
 
         protected Lex LexCur { get; }
         
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             throw new NotImplementedException();
         }
@@ -244,7 +244,7 @@ public partial class Parser
             LexCur = lexeme;
         }
         protected Lex LexCur { get; set; }
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             Console.WriteLine(branchAscii + LexCur.Source);
         }
@@ -253,7 +253,6 @@ public partial class Parser
             return LexCur.Source;
         }
     }
-
     public class NumberExpressionNode : ExpressionNode
     {
         public NumberExpressionNode(Lex lexeme) : base()
@@ -266,14 +265,13 @@ public partial class Parser
             return LexCur.Source;
         }
 
-        public override void PrintTree(string branchAscii)
+        public void PrintTree(string branchAscii)
         {
             Console.WriteLine(branchAscii + LexCur.Source);
         }
 
         protected Lex LexCur { get; set; }
     }
-    
     public List<IdNode> IdList()
     {
         var ids = new List<IdNode>();
