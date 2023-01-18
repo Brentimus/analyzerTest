@@ -239,15 +239,14 @@ public class Scanner : Buffer
                             AddLex(LexType.Double, Double(Convert.ToDouble(_buf)),
                                 baseNum == 16 ? "$" + originalBuf : baseNum == 8 ? "&" + originalBuf : baseNum == 2 ? "%" + originalBuf : originalBuf);
                             _state = States.Fin;
-                        } else Back();
-                        break;
+                            break;
+                        }
+                        Back();
                     }
-                    
-                    {
-                        AddLex(LexType.Integer, Convert.ToInt32(_buf, baseNum),
-                            baseNum == 16 ? "$" + _buf : baseNum == 8 ? "&" + _buf : baseNum == 2 ? "%" + _buf : _buf);
-                        _state = States.Fin;
-                    }
+                
+                    AddLex(LexType.Integer, Convert.ToInt32(_buf, baseNum),
+                        baseNum == 16 ? "$" + _buf : baseNum == 8 ? "&" + _buf : baseNum == 2 ? "%" + _buf : _buf);
+                    _state = States.Fin;
                 }
                 break;
 
