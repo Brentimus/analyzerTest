@@ -31,18 +31,16 @@
 
 // statements
 <statement_sequence> ::= {";"} <statement> {";" <statement>} {";"}
-<statement> ::= <simple_statement> | <structured_statement>
+<statement> ::= <structured_statement> | <simple_statement>
 
 <simple_statement> ::= <assignment_statement> | <function_call_statement>
 <function_call_statement> ::= <id> ["(" <id_list> ")"]
-<structured_statement> ::= <compound_statement> | <repetitive_statement> | <condition_statement>
+<structured_statement> ::= <compound_statement> | <for_statement> | <while_statement> | <if_statement>
 
 <compound_statement> ::= "begin" <statement_sequence> "end"
 <assignment_statement> ::= <var_ref> (":=" | "+=" | "-=" | "*=" | "/=") <expression>
-<repetitive_statement> ::= <for_statement> | <while_statement>
 <while_statement> ::= "while" <expression> "do" <statement>
 <for_statement> ::= "for" <id> ":=" <expression> ("to" | "downto") <expression> "do" <statement>
-<condition_statement> ::= <if_statement>
 <if_statement> ::= "if" <expression> "then" <statement> ["else" <statement>]
 
 // expressions

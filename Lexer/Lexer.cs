@@ -9,122 +9,122 @@ public class Scanner : Buffer
     private static string _buf;
     private static string _bufString;
     private States _state;
-    public int baseNum = 10;
     public Lex Lexeme;
-
+    
+    public string Double(double digit)
+    {
+        return digit.ToString("E16", CultureInfo.InvariantCulture);
+    }
     public Scanner(StreamReader fileReader)
     {
         file = fileReader;
     }
-
     private void SkipCommentSpace()
     {
-        SkipSpace();
-        if (Peek() == '/' && _cur == '/')
+        while (true)
         {
-            while (Peek() != '\n')
+            if (_cur == '/')
             {
+                if (Peek() == '/')
+                    while (Peek() != '\n' && Peek() > 0)
+                    {
+                        GetNext();
+                    }
+                else break;
                 GetNext();
-                if (file.EndOfStream)
-                {
-                    _cur = '\0';
-                    break;
-                }
             }
-        }
-        else if (Peek() == '*' && _cur == '(')
-        {
-            GetNext();
-            while (true)
+            else if (_cur == '(')
             {
-                if (file.EndOfStream) throw new LexException(PositionCur, "comment error");
-                GetNext();
-                if (Peek() == ')' && _cur == '*')
+                if (Peek() == '*')
                 {
                     GetNext();
+                    while (Peek() != ')' || _cur != '*')
+                    {
+                        if (file.EndOfStream)
+                        {
+                            _curPos.Column++;
+                            throw new LexException(PositionCur, "Unexpected end of file");
+                        }
+                        GetNext();
+                    }
                     GetNext();
-                    break;
+                    GetNext();
                 }
+                else break;
             }
-        }
-        else if (_cur == '{')
-        {
-            while (_cur != '}')
+            else if (_cur == '{')
             {
-                if (file.EndOfStream) throw new LexException(PositionCur, "comment error");
+                while (_cur != '}')
+                {
+                    if (file.EndOfStream)
+                    {
+                        throw new LexException(PositionCur, "Unexpected end of file");
+                    }
+                    GetNext();
+                }
                 GetNext();
             }
-
-            GetNext();
+            else if (IsSpace(_cur))
+            {
+                SkipSpace();
+            } else break;
         }
-        else
-        {
-            SkipSpace();
-            return;
-        }
-        SkipCommentSpace();
     }
-
     private void SkipSpace()
     {
-        switch (_cur)
+        while (IsSpace(_cur))
         {
-            case '\n':
-            case '\t':
-            case ' ':
-            case '\r':
-            case '\0':
-                if (file.EndOfStream)
-                {
-                    _cur = '\0';
-                    break;
-                }
-                GetNext();
-                SkipSpace();
-                break;
+            GetNext();
         }
     }
-
     private static void ClearBuf()
     {
         _buf = "";
     }
-
     private static void AddBuf(char symbol)
     {
         _buf += symbol;
     }
-
     private object SearchKeyword()
     {
         if (Enum.TryParse(_buf, true, out LexKeywords keyWords)) return Enum.Parse(typeof(LexKeywords), _buf, true);
         return "";
     }
-
     private void AddLex(LexType id, object value, string source)
     {
-        Lexeme = new Lex(id, source, value, Position.Line, Position.Column);
+        Lexeme = new Lex(id, source, value, Position);
     }
-
-    private bool IsDigit(char c, int baseNum)
+    private bool IsDigit(char c, int baseDigit)
     {
-        return baseNum switch
+        return baseDigit switch
         {
             10 => c is >= '0' and <= '9',
             16 => c is >= '0' and <= '9' or >= 'A' and <= 'F' or >= 'a' and <= 'f',
             8 => c is >= '0' and <= '7',
             2 => c is >= '0' and <= '1',
-            _ => throw new LexException(Position, "number base error")
+            _ => throw new LexException(PositionCur, "Invalid integer expression")
         };
     }
-
+    private int Getbase(char c)
+    {
+        return c switch
+        {
+            '%' => 2,
+            '&' => 8,
+            '$' => 16,
+            _ => 10
+        };
+    }
     private void State()
     {
         switch (_state)
         {
-            case States.Num:
+            /*case States.Num:
+                var baseNum = Getbase(_cur);
+                var charBaseNum = _cur;
                 while (_state == States.Num)
                 {
+                    
                     if (Peek() == '.')
                     {
                         GetNext();
@@ -136,7 +136,7 @@ public class Scanner : Buffer
                             bufNum += _cur;
 
                             while (true)
-                                if (char.IsDigit(Peek()))
+                                if (char.IsDigit((char)Peek()))
                                 {
                                     GetNext();
                                     AddBuf(_cur);
@@ -156,7 +156,7 @@ public class Scanner : Buffer
                         Back();
                     }
 
-                    if (IsDigit(Peek(), baseNum))
+                    if (IsDigit((char)Peek(), baseNum))
                     {
                         GetNext();
                         AddBuf(_cur);
@@ -164,16 +164,96 @@ public class Scanner : Buffer
                     else
                     {
                         AddLex(LexType.Integer, Convert.ToInt32(_buf, baseNum),
-                            baseNum == 16 ? "$" + _buf : baseNum == 8 ? "&" + _buf : baseNum == 2 ? "%" + _buf : _buf);
+                            charBaseNum+_buf);
                         _state = States.Fin;
                     }
                 }
 
+                break;*/
+            
+            case States.Num:
+                var baseNum = Getbase(_cur);
+                while (_state == States.Num)
+                {
+                    while (IsDigit((char)Peek(), baseNum))
+                    {
+                        GetNext();
+                        AddBuf(_cur);
+                        if (Convert.ToInt64(_buf, baseNum) > Int32.MaxValue)
+                        {
+                            throw new LexException(Position, "Type overflow");
+                        }
+                    }
+                    if (Peek() == '.'|| char.ToLower((char)Peek()) == 'e')
+                    {
+                        GetNext();
+                        if (Peek() != '.')
+                        {
+                            var originalBuf = _buf;
+                            _buf = Convert.ToInt64(_buf, baseNum).ToString();
+                            AddBuf(_cur);
+                            originalBuf += _cur;
+                            string fracDigit = "";
+                            while (IsDigit((char) Peek(), 10))
+                            {
+                                GetNext();
+                                AddBuf(_cur);
+                                fracDigit += _cur;
+                            }
+
+                            originalBuf += fracDigit;
+
+                            if (char.ToLower((char) Peek()) == 'e')
+                            {
+                                GetNext();
+                                AddBuf(_cur);
+                                originalBuf += _cur;
+                            }
+                            if (char.ToLower(_cur) == 'e')
+                            {
+                                if (Peek() == '-' || Peek() == '+')
+                                {
+                                    GetNext();
+                                    AddBuf(_cur);
+                                    originalBuf += _cur;
+                                }
+
+                                string expDigit = "";
+
+                                while (IsDigit((char) Peek(), 10))
+                                {
+                                    GetNext();
+                                    expDigit += _cur;
+                                }
+
+                                if (expDigit == "")
+                                {
+                                    if (_buf.Contains('.') && fracDigit == "")
+                                        throw new LexException(Position, "Illegal floating point constant");
+                                    string illegal = 6 < Peek() && Peek() < 14 ? $"#{Peek()}" : ((char) Peek()).ToString();
+                                    throw new LexException(Position, $"Illegal character '{illegal}'");
+                                }
+                                _buf += expDigit;
+                                originalBuf += expDigit;
+                            }
+                            AddLex(LexType.Double, Double(Convert.ToDouble(_buf)),
+                                baseNum == 16 ? "$" + originalBuf : baseNum == 8 ? "&" + originalBuf : baseNum == 2 ? "%" + originalBuf : originalBuf);
+                            _state = States.Fin;
+                        } else Back();
+                        break;
+                    }
+                    
+                    {
+                        AddLex(LexType.Integer, Convert.ToInt32(_buf, baseNum),
+                            baseNum == 16 ? "$" + _buf : baseNum == 8 ? "&" + _buf : baseNum == 2 ? "%" + _buf : _buf);
+                        _state = States.Fin;
+                    }
+                }
                 break;
 
             case States.Id:
                 while (_state == States.Id)
-                    if (char.IsLetterOrDigit(Peek()) || Peek() == '_')
+                    if (char.IsLetterOrDigit((char)Peek()) || Peek() == '_')
                     {
                         GetNext();
                         AddBuf(_cur);
@@ -255,10 +335,10 @@ public class Scanner : Buffer
                 while (true)
                 {
                     var _localChar = "";
-                    if (!char.IsDigit(Peek()))
+                    if (!char.IsDigit((char)Peek()))
                         throw new LexException(PositionCur, "Char error");
 
-                    while (char.IsDigit(Peek()))
+                    while (char.IsDigit((char)Peek()))
                     {
                         GetNext();
                         _localChar += _cur;
@@ -329,21 +409,19 @@ public class Scanner : Buffer
                 break;
 
             case States.Eof:
-                Lexeme = new Lex(LexType.Eof, "", "", Position.Line, (Position.Column + 1));
+                Lexeme = new Lex(LexType.Eof, "", "", Position);
                 break;
 
             case States.Er:
-                throw new LexException(PositionCur, "invalid symbol " +_cur);
+                throw new LexException(PositionCur, $"Illegal character '{_cur}'");
         }
     }
-
     public Lex ScannerLex()
     {
         _state = States.Fin;
         GetNext();
         SkipCommentSpace();
         Position = PositionCur;
-        baseNum = 10;
         ClearBuf();
         if (char.IsLetter(_cur) || _cur == '_')
         {
@@ -360,18 +438,10 @@ public class Scanner : Buffer
             switch (_cur)
             {
                 case '%':
-                    baseNum = 2;
-                    IsDigit(Peek(), baseNum);
-                    _state = States.Num;
-                    break;
                 case '$':
-                    baseNum = 16;
-                    IsDigit(Peek(), baseNum);
-                    _state = States.Num;
-                    break;
                 case '&':
-                    baseNum = 8;
-                    IsDigit(Peek(), baseNum);
+                    if (!IsDigit((char) Peek(), Getbase(_cur)))
+                        throw new LexException(PositionCur, "Invalid integer expression");
                     _state = States.Num;
                     break;
                 case '#':
@@ -470,7 +540,7 @@ public class Scanner : Buffer
                     AddBuf(_cur);
                     _state = States.Opr;
                     break;
-                case '\0' when file.EndOfStream:
+                case (char)65535 when file.EndOfStream:
                     _state = States.Eof;
                     break;
                 default:

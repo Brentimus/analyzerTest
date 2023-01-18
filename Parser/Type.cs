@@ -29,7 +29,7 @@ public partial class Parser
     public SymType PrimitiveType()
     {
         if (_curLex.Is(LexKeywords.STRING))
-            return new SymType(_curLex.Value.ToString()!); //TODO: Maybe wrong
+            return new SymType(_curLex.Value.ToString().ToLower()); //TODO: Maybe wrong
         return new SymType(Id().ToString());
     }
 
@@ -97,7 +97,7 @@ public partial class Parser
             foreach (var idNode in field.Ids)
             {
                 // TODO: get name in lower
-                table.Push(new SymVar(idNode.ToString().ToLower(), field.Type), true);
+                table.Push(new SymVar(idNode.ToString(), field.Type), true);
             }
         }
 
@@ -121,7 +121,6 @@ public partial class Parser
 
         return fields;
     }
-
     public FieldSelectionNode FieldSelection()
     {
         var ids = IdList();

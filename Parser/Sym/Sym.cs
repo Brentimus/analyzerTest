@@ -34,42 +34,36 @@ public class SymType : Sym
         return ResolveAlias().Name.Equals(other.ResolveAlias().Name);
     }
 }
-
 public class SymInteger : SymType
 {
     public SymInteger() : base("integer")
     {
     }
 }
-
 public class SymDouble : SymType
 {
     public SymDouble() : base("double")
     {
     }
 }
-
 public class SymBoolean : SymType
 {
     public SymBoolean() : base("boolean")
     {
     }
 }
-
 public class SymChar : SymType
 {
     public SymChar() : base("char")
     {
     }
 }
-
 public class SymString : SymType
 {
     public SymString() : base("string")
     {
     }
 }
-
 public class SymAlias : SymType
 {
     public SymType Original { get; }
@@ -84,7 +78,6 @@ public class SymAlias : SymType
         return Original;
     }
 }
-
 public class SymVar : Sym
 {
     public SymType SymType { get; }
@@ -94,28 +87,24 @@ public class SymVar : Sym
         SymType = symType;
     }
 }
-
 public class SymConst : Sym
 {
     public SymConst(string name) : base(name)
     {
     }
 }
-
 public class SymParam : SymVar
 {
     public SymParam(string name, SymType symType) : base(name, symType)
     {
     }
 }
-
 public class SymVarParam : SymParam
 {
     public SymVarParam(string name, SymType symType) : base(name, symType)
     {
     }
 }
-
 public class SymConstParam : SymParam
 {
     public SymConstParam(string name, SymType symType) : base(name, symType)
@@ -144,7 +133,6 @@ public class SymRecord : SymType
         return true;
     }
 }
-
 public class SymArray : SymType
 {
     public SymType Type { get; }
@@ -156,7 +144,6 @@ public class SymArray : SymType
         Range = range;
     }
 }
-
 public class SymProcedure : Sym
 {
     public SymTable Locals { get; }
@@ -168,19 +155,16 @@ public class SymProcedure : Sym
         CompoundStatementNode = compoundStatementNode;
     }
 }
-
-public class SymFunction : SymProcedure
+public class SymFunction : Sym
 {
     public SymTable ReturnType { get; }
 
     public SymFunction(string name, SymTable locals, Parser.CompoundStatementNode compoundStatementNode,
-        SymTable returnType) : base(name,
-        locals, compoundStatementNode)
+        SymTable returnType) : base(name)
     {
         ReturnType = returnType;
     }
 }
-
 public class SymTable
 {
     public OrderedDictionary Data { get; }

@@ -12,7 +12,8 @@ internal class Program : Buffer
         using (var fileReader = new StreamReader("../../../../test.in"))
         {
             var scan = new Scanner(fileReader);
-            while (!fileReader.EndOfStream)
+            do
+            {
                 try
                 {
                     Console.WriteLine(scan.ScannerLex());
@@ -22,6 +23,7 @@ internal class Program : Buffer
                     Console.Write(e.Message);
                     return;
                 }
+            } while (!fileReader.EndOfStream);
 
             if (scan.Lexeme.LexType != LexType.Eof)
                 Console.Write(scan.ScannerLex());

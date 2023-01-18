@@ -175,7 +175,7 @@
 34  16  Separator  Semicolom  ;
 35  9  Keyword  END  end
 35  12  Separator  Semicolom  ;
-36  5  Identifier  WriteLn  WriteLn
+36  5  Keyword  WRITELN  WriteLn
 36  12  Separator  Lparen  (
 36  13  Integer  0  0
 36  14  Separator  Rparen  )
@@ -199,7 +199,7 @@
 41  1  Keyword  END  end
 41  4  Separator  Semicolom  ;
 43  1  Keyword  BEGIN  begin
-44  5  Identifier  Read  Read
+44  5  Keyword  READ  Read
 44  9  Separator  Lparen  (
 44  10  Identifier  input  input
 44  15  Separator  Rparen  )
@@ -259,7 +259,7 @@
 53  31  Integer  1  1
 53  32  Separator  Rparen  )
 53  33  Separator  Semicolom  ;
-53  35  Identifier  Write  Write
+53  35  Keyword  WRITE  Write
 53  40  Separator  Lparen  (
 53  41  Identifier  toDec  toDec
 53  46  Separator  Lparen  (
@@ -285,7 +285,7 @@
 54  31  Integer  1  1
 54  32  Separator  Rparen  )
 54  33  Separator  Semicolom  ;
-54  35  Identifier  Write  Write
+54  35  Keyword  WRITE  Write
 54  40  Separator  Lparen  (
 54  41  Identifier  toDec  toDec
 54  46  Separator  Lparen  (
@@ -311,7 +311,7 @@
 55  31  Integer  1  1
 55  32  Separator  Rparen  )
 55  33  Separator  Semicolom  ;
-55  35  Identifier  Write  Write
+55  35  Keyword  WRITE  Write
 55  40  Separator  Lparen  (
 55  41  Identifier  toDec  toDec
 55  46  Separator  Lparen  (
@@ -326,7 +326,7 @@
 55  65  Keyword  END  end
 55  68  Separator  Semicolom  ;
 56  5  Keyword  ELSE  else
-57  9  Identifier  Write  Write
+57  9  Keyword  WRITE  Write
 57  14  Separator  Lparen  (
 57  15  Identifier  toDec  toDec
 57  20  Separator  Lparen  (

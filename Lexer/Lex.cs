@@ -5,18 +5,18 @@ namespace Lexer;
 public class Lex
 {
     public int Column;
-    public LexType LexType;
     public int Line;
+    public LexType LexType;
     public string Source;
     public object Value;
 
-    public Lex(LexType lexType, string source, object value, int line, int column)
+    public Lex(LexType lexType, string source, object value, Buffer.Pos pos)
     {
         LexType = lexType;
         Value = value;
         Source = source;
-        Line = line;
-        Column = column;
+        Line = pos.Line;
+        Column = pos.Column;
     }
 
     public override string ToString()

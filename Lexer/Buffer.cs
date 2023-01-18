@@ -8,21 +8,24 @@ public class Buffer
     protected char? _back;
     protected char _cur;
 
-    private Pos _curPos = new Pos();
+    public Pos _curPos = new Pos();
     
     public Pos Position { get => _pos; set => _pos = value; }
     public Pos PositionCur { get => _curPos; set => _curPos = value; }
 
-    protected char Peek()
+    protected int Peek()
     {
-        return (char) file.Peek();
+        return file.Peek();
     }
-    
     protected void Back()
     {
         _back = _cur;
     }
-    
+
+    protected bool IsSpace(char cur)
+    {
+        return cur is '\n' or '\t' or ' ' or '\r';
+    }
     protected void GetNext()
     {
         if (_back != null)
@@ -30,7 +33,7 @@ public class Buffer
             _cur = (char) _back;
             _back = null;
         }
-        else if (!file.EndOfStream)
+        else
         {
             _cur = (char)file.Read();
             if (_cur == '\n')
@@ -42,10 +45,6 @@ public class Buffer
             {
                 _curPos.Column++;
             }
-        }
-        else
-        {
-            _cur = '\0';
         }
     }
     

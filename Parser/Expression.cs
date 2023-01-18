@@ -4,6 +4,56 @@ namespace Parser;
 
 public partial class Parser
 {
+    public abstract class ExpressionNode : Node
+    {
+    }
+    public class UnOpExpressionNode : ExpressionNode
+    {
+        public UnOpExpressionNode(Lex op, ExpressionNode node)
+        {
+            Op = op;
+            Node = node;
+        }
+
+        public Lex Op { get; }
+
+        public ExpressionNode Node { get; }
+
+        public void PrintTree(string branchAscii)
+        {
+            Console.WriteLine(branchAscii + Op.Source);
+        }
+    }
+
+    public class BinOpExpressionNode : ExpressionNode
+    {
+        public BinOpExpressionNode(Lex op, Node left, Node right)
+        {
+            Op = op;
+            Left = left;
+            Right = right;
+        }
+
+        protected Lex Op { get; set; }
+
+        public Node Right { get; }
+        public Node Left { get; }
+
+        public void PrintTree(string branchAscii)
+        {
+            Console.WriteLine(branchAscii + Op.Source);
+            branchAscii = branchAscii.Replace("├───", "│   ");
+            branchAscii = branchAscii.Replace("└───", "    ");
+            Left.PrintTree(branchAscii + "├───");
+            Right.PrintTree(branchAscii + "└───");
+        }
+
+        public string ToString()
+        {
+            return Op.Source;
+        }
+    }
+
     public ExpressionNode Expression()
     {
         var left = SimpleExpression();
@@ -83,7 +133,7 @@ public partial class Parser
         return e;
     }
 
-    private ExpressionNode VarRef()
+    public ExpressionNode VarRef()
     {
         var left = Id() as ExpressionNode;
         var lex = _curLex;
@@ -176,12 +226,11 @@ public partial class Parser
             return Field.ToString();
         }
     }
-    public class FunctionCall : ExpressionNode
+    public class FunctionCallNode : ExpressionNode
     {
-        public FunctionCall() : base()
+        public FunctionCallNode() : base()
         {
         }
-
         public ExpressionNode ArrayId { get; set;}
         public List<ExpressionNode> ArrayExp { get; set;}
         public void PrintTree(string branchAscii)
@@ -206,7 +255,7 @@ public partial class Parser
 
         public override string ToString()
         {
-            return LexCur.Source;
+            return LexCur.Value.ToString().ToLower();
         }
     }
     public class BooleanNode : ExpressionNode
