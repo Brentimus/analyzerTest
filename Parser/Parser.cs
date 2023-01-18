@@ -1,37 +1,36 @@
+using System.Data;
 using Lexer;
 
 namespace Parser;
-
-interface ITreePrintable
-{
-    public abstract void PrintTree(string branchAscii);
-}
 
 public partial class Parser : Buffer
 {
     private readonly Scanner _scan;
     private Lex _curLex;
+
     public Parser(StreamReader fileReader)
     {
         _scan = new Scanner(fileReader);
         _curLex = _scan.ScannerLex();
     }
-    
-    public abstract class Node : ITreePrintable
+
+    public abstract class Node
     {
         protected Node(Lex lex = null) => Lex = lex;
         public Lex Lex { get; set; }
 
-        public void PrintTree(string branchAscii)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void Accept(IVisitor visitor);
+        
     }
-    
+
     public class KeywordNode : Node
     {
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
-    
+
     public class ProgramNode : Node
     {
         public ProgramNode(IdNode? name, BlockNode block)
@@ -43,9 +42,9 @@ public partial class Parser : Buffer
         public IdNode? Name { get; }
         public BlockNode Block { get; }
 
-        public void PrintTree(string branchAscii)
+        public override void Accept(IVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.Visit(this);
         }
     }
 
@@ -59,11 +58,12 @@ public partial class Parser : Buffer
             name = Id();
             Require(LexSeparator.Semicolom);
         }
+
         BlockNode block = Block();
         Require(LexSeparator.Dot);
         return new ProgramNode(name, block);
     }
-    
+
     public void Require(LexOperator op, bool eat = true)
     {
         if (_curLex.Is(op))
@@ -78,6 +78,7 @@ public partial class Parser : Buffer
 
         throw new Exception("Expected");
     }
+
     public void Require(LexType op, bool eat = true)
     {
         if (_curLex.Is(op))
@@ -92,6 +93,7 @@ public partial class Parser : Buffer
 
         throw new Exception("Expected");
     }
+
     public void Require(LexSeparator sep, bool eat = true)
     {
         if (_curLex.Is(sep))
@@ -104,8 +106,9 @@ public partial class Parser : Buffer
             return;
         }
 
-        throw new SyntaxException(_curLex.Line,_curLex.Column, $"Expected '{sep}'");
+        throw new SyntaxException(_curLex.Line, _curLex.Column, $"Expected '{sep}'");
     }
+
     public void Require(LexKeywords keyword, bool eat = true)
     {
         if (_curLex.Is(keyword))
@@ -118,7 +121,7 @@ public partial class Parser : Buffer
             return;
         }
 
-        throw new SyntaxException(_curLex.Line,_curLex.Column, $"Expected '{keyword}'");
+        throw new SyntaxException(_curLex.Line, _curLex.Column, $"Expected '{keyword}'");
     }
 
     public Lex Eat()
@@ -126,17 +129,19 @@ public partial class Parser : Buffer
         _curLex = _scan.ScannerLex();
         return _curLex;
     }
+
     public IdNode Id()
     {
         if (!_curLex.Is(LexType.Identifier))
         {
-            throw new SyntaxException(_curLex.Line,_curLex.Column, "Expect Identifier");
+            throw new SyntaxException(_curLex.Line, _curLex.Column, "Expect Identifier");
         }
 
         var lex = _curLex;
         Eat();
         return new IdNode(lex);
     }
+
     public KeywordNode Keyword()
     {
         var lex = _curLex;
@@ -144,6 +149,7 @@ public partial class Parser : Buffer
         {
             throw new Exception("Expect Keyword");
         }
+
         Eat();
         return new KeywordNode();
     }

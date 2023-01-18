@@ -79,6 +79,10 @@ public partial class Parser
 
         public ExpressionNode Begin { get; }
         public ExpressionNode End { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public SymRecord RecordType()
@@ -139,5 +143,9 @@ public partial class Parser
 
         public List<IdNode> Ids { get; }
         public SymType Type { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

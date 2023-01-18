@@ -7,6 +7,10 @@ public partial class Parser
 {
     public class StatementNode : Node
     {
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public class CompoundStatementNode : StatementNode
@@ -17,6 +21,10 @@ public partial class Parser
         }
 
         public List<StatementNode> States { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public class IfStatementNode : StatementNode
@@ -31,6 +39,10 @@ public partial class Parser
         public ExpressionNode Exp { get; }
         public StatementNode StateThen { get; }
         public StatementNode StateElse { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public class ForStatementNode : StatementNode
@@ -50,6 +62,10 @@ public partial class Parser
         public ExpressionNode ExpTo { get; }
         public KeywordNode To { get; }
         public StatementNode State { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public class WhileStatementNode : StatementNode
@@ -62,6 +78,10 @@ public partial class Parser
 
         public ExpressionNode Exp { get; }
         public StatementNode State { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public class AssignmentStatementNode : StatementNode
@@ -76,16 +96,14 @@ public partial class Parser
         public ExpressionNode VarRef { get; }
         public Lex Op { get; }
         public ExpressionNode Exp { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public class FunctionCallStatementNode : StatementNode
     {
-        public FunctionCallStatementNode(IdNode id, List<ExpressionNode> args)
-        {
-            Args = args;
-            Id = id;
-        }
-
         public FunctionCallStatementNode(CallNode node)
         {
             Args = node.Args;
@@ -93,7 +111,10 @@ public partial class Parser
         }
 
         public List<ExpressionNode> Args { get; }
-        public IdNode Id { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 
     public StatementNode Statement()

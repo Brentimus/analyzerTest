@@ -23,12 +23,11 @@ public partial class Parser
 
         public ExpressionNode Node { get; }
 
-        public void PrintTree(string branchAscii)
+        public override void Accept(IVisitor visitor)
         {
-            Console.WriteLine(branchAscii + Op.Source);
+            visitor.Visit(this);
         }
     }
-
     public class BinOpExpressionNode : ExpressionNode
     {
         public BinOpExpressionNode(Lex op, Node left, Node right)
@@ -43,13 +42,9 @@ public partial class Parser
         public Node Right { get; }
         public Node Left { get; }
 
-        public void PrintTree(string branchAscii)
+        public override void Accept(IVisitor visitor)
         {
-            Console.WriteLine(branchAscii + Op.Source);
-            branchAscii = branchAscii.Replace("├───", "│   ");
-            branchAscii = branchAscii.Replace("└───", "    ");
-            Left.PrintTree(branchAscii + "├───");
-            Right.PrintTree(branchAscii + "└───");
+            visitor.Visit(this);
         }
 
         public string ToString()
@@ -57,17 +52,7 @@ public partial class Parser
             return Op.Source;
         }
     }
-
-    public class CallNode : ExpressionNode
-    {
-        public CallNode(IdNode name, List<ExpressionNode> args) : base(name.LexCur)
-        {
-            Args = args;
-        }
-
-        public List<ExpressionNode> Args { get; }
-    }
-
+    
     public class WriteCallNode : CallNode
     {
         public WriteCallNode(IdNode name, List<ExpressionNode> args, bool newLine) : base(name, args)
@@ -85,6 +70,126 @@ public partial class Parser
         public bool NewLine { get; }
     }
 
+    public class ArrayAccess : ExpressionNode
+    {
+        public ArrayAccess(ExpressionNode arrayId, List<ExpressionNode> arrayExp) : base()
+        {
+            ArrayId = arrayId;
+            ArrayExp = arrayExp;
+        }
+
+        public ExpressionNode ArrayId { get; set;}
+        public List<ExpressionNode> ArrayExp { get; set;}
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
+        public override string ToString()
+        {
+            return ArrayId +" "+ArrayExp;
+        }
+    }
+    public class RecordAccess : ExpressionNode
+    {
+        public RecordAccess(ExpressionNode recordId, IdNode field)
+        {
+            RecordId = recordId;
+            Field = field;
+        }
+        public ExpressionNode RecordId { get; set; }
+        public IdNode Field { get; set; }
+        
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+        public override string ToString()
+        {
+            return Field.ToString();
+        }
+        
+    }
+    public class CallNode : ExpressionNode
+    {
+        public CallNode(IdNode name, List<ExpressionNode> args) : base(name.LexCur)
+        {
+            Args = args;
+        }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+        public List<ExpressionNode> Args { get; }
+    }
+    public class IdNode : ExpressionNode
+    {
+        public IdNode(Lex lexCur)
+        {
+            LexCur = lexCur;
+        }
+
+        public Lex LexCur { get; set; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+        
+        public override string ToString()
+        {
+            return LexCur.Value.ToString().ToLower();
+        }
+    }
+    public class BooleanNode : ExpressionNode
+    {
+        public BooleanNode(Lex lexCur)
+        {
+            LexCur = lexCur;
+        }
+
+        protected Lex LexCur { get; }
+        
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+    }
+    public class StringNode : ExpressionNode
+    {
+        public StringNode(Lex lexeme)
+        {
+            LexCur = lexeme;
+        }
+        protected Lex LexCur { get; set; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+        public override string ToString()
+        {
+            return LexCur.Source;
+        }
+    }
+    public class NumberExpressionNode : ExpressionNode
+    {
+        public NumberExpressionNode(Lex lexeme) : base()
+        {
+            LexCur = lexeme;
+        }
+
+        public override string ToString()
+        {
+            return LexCur.Source;
+        }
+
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
+        protected Lex LexCur { get; set; }
+    }
+    
     public CallNode Stream()
     {
         var lex = _curLex;
@@ -181,7 +286,6 @@ public partial class Parser
         Eat();
         return e;
     }
-
     public ExpressionNode VarRef()
     {
         var left = Id() as ExpressionNode;
@@ -231,130 +335,4 @@ public partial class Parser
             }
         }
     }
-
-    public class ArrayAccess : ExpressionNode
-    {
-        public ArrayAccess(ExpressionNode arrayId, List<ExpressionNode> arrayExp) : base()
-        {
-            ArrayId = arrayId;
-            ArrayExp = arrayExp;
-        }
-
-        public ExpressionNode ArrayId { get; set;}
-        public List<ExpressionNode> ArrayExp { get; set;}
-        public void PrintTree(string branchAscii)
-        {
-            Console.WriteLine(branchAscii + ArrayId + ArrayExp);
-        }
-
-        public override string ToString()
-        {
-            return ArrayId +" "+ArrayExp;
-        }
-    }
-    public class RecordAccess : ExpressionNode
-    {
-        public RecordAccess(ExpressionNode recordId, IdNode field)
-        {
-            RecordId = recordId;
-            Field = field;
-        }
-        public ExpressionNode RecordId { get; set; }
-        public IdNode Field { get; set; }
-        
-        public void PrintTree(string branchAscii)
-        {
-            Console.WriteLine(branchAscii + RecordId);
-            branchAscii = branchAscii.Replace("├───", "│   ");
-            branchAscii = branchAscii.Replace("└───", "    ");
-            RecordId.PrintTree(branchAscii + "└───");
-        }
-
-        public override string ToString()
-        {
-            return Field.ToString();
-        }
-    }
-    public class FunctionCallNode : ExpressionNode
-    {
-        public FunctionCallNode() : base()
-        {
-        }
-        public ExpressionNode ArrayId { get; set;}
-        public List<ExpressionNode> ArrayExp { get; set;}
-        public void PrintTree(string branchAscii)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    
-    public class IdNode : ExpressionNode
-    {
-        public IdNode(Lex lexCur)
-        {
-            LexCur = lexCur;
-        }
-
-        public void PrintTree(string branchAscii)
-        {
-            Console.WriteLine(branchAscii + LexCur.Source);
-        }
-
-        public Lex LexCur { get; set; }
-
-        public override string ToString()
-        {
-            return LexCur.Value.ToString().ToLower();
-        }
-    }
-    public class BooleanNode : ExpressionNode
-    {
-        public BooleanNode(Lex lexCur)
-        {
-            LexCur = lexCur;
-        }
-
-        protected Lex LexCur { get; }
-        
-        public void PrintTree(string branchAscii)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    public class StringNode : ExpressionNode
-    {
-        public StringNode(Lex lexeme)
-        {
-            LexCur = lexeme;
-        }
-        protected Lex LexCur { get; set; }
-        public void PrintTree(string branchAscii)
-        {
-            Console.WriteLine(branchAscii + LexCur.Source);
-        }
-        public override string ToString()
-        {
-            return LexCur.Source;
-        }
-    }
-    public class NumberExpressionNode : ExpressionNode
-    {
-        public NumberExpressionNode(Lex lexeme) : base()
-        {
-            LexCur = lexeme;
-        }
-
-        public override string ToString()
-        {
-            return LexCur.Source;
-        }
-
-        public void PrintTree(string branchAscii)
-        {
-            Console.WriteLine(branchAscii + LexCur.Source);
-        }
-
-        protected Lex LexCur { get; set; }
-    }
-    
 }

@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 using Lexer;
 using Parser.Sym;
 
@@ -11,22 +10,44 @@ public partial class Parser
     }
     public class BlockNode : Node
     {
-        public BlockNode(List<DeclarationNode> declarations, CompoundStatementNode compound, List<SymFunction> function, List<SymProcedure> procedure, Lex lex = null) : base(lex)
+        public BlockNode(List<DeclarationNode> declarations, CompoundStatementNode compound, Lex lex = null) : base(lex)
         {
             Declarations = declarations;
             Compound = compound;
-            Function = function;
-            Procedure = procedure;
         }
 
         public List<DeclarationNode> Declarations { get; }
         public CompoundStatementNode Compound { get; }
-
-        public List<SymFunction> Function { get; }
-        public List<SymProcedure> Procedure { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
-    
-    
+    public class ProcDelcNode : DeclarationNode
+    {
+        public ProcDelcNode(SymProcedure procedure)
+        {
+            Procedure = procedure;
+        }
+        public SymProcedure Procedure { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+        
+    }
+    public class FuncDelcNode : DeclarationNode
+    {
+        public FuncDelcNode(SymFunction function)
+        {
+            Function = function;
+        }
+        private SymFunction Function { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+    }
     public class VarDeclNode : DeclarationNode
     {
         public VarDeclNode(List<SymVarParam> symVarParams, ExpressionNode? exp)
@@ -37,7 +58,10 @@ public partial class Parser
 
         public List<SymVarParam> SymVarParams { get; }
         public ExpressionNode? Exp { get; }
-
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
     public class VarDeclsNode : DeclarationNode
     {
@@ -47,6 +71,10 @@ public partial class Parser
         {
             Dels = dels;
         }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
     public class ConstDeclsNode : DeclarationNode
     {
@@ -54,8 +82,12 @@ public partial class Parser
         {
             Decls = decls;
         }
-
         public List<ConstDeclNode> Decls { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+        
     }
     public class ConstDeclNode : DeclarationNode
     {
@@ -69,6 +101,10 @@ public partial class Parser
         public SymConst SymConst { get; }
         public SymConstParam SymConstParam { get; }
         public ExpressionNode Exp { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
     public class TypeDeclsNode : DeclarationNode
     {
@@ -78,6 +114,10 @@ public partial class Parser
         }
 
         public List<SymAlias> TypeDecs { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
     public class ParameterNode : DeclarationNode
     {
@@ -90,6 +130,10 @@ public partial class Parser
         public KeywordNode Keyword { get; }
         public List<IdNode> IdList { get; }
         public SymType Type { get; }
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
     public ParameterNode Parameter()
     {
@@ -187,8 +231,6 @@ public partial class Parser
     public BlockNode Block()
     {
         var declarations = new List<DeclarationNode>();
-        var procs = new List<SymProcedure>();
-        var funcs = new List<SymFunction>();
         while (true)
         {
             if (_curLex.Is(LexKeywords.VAR))
@@ -209,14 +251,12 @@ public partial class Parser
             else if (_curLex.Is(LexKeywords.PROCEDURE))
             {
                 Eat();
-                procs.Add(ProcDecl());
-                //declarations.Add(ProcDecl()); //TODO: FIX
+                declarations.Add(new ProcDelcNode(ProcDecl()));
             }
             else if (_curLex.Is(LexKeywords.FUNCTION))
             {
                 Eat();
-                funcs.Add(FuncDecl());
-                //declarations.Add(FuncDecl()); //TODO: FIX
+                declarations.Add(new FuncDelcNode(FuncDecl()));
             }
             else
             {
@@ -224,9 +264,8 @@ public partial class Parser
             }
         }
         var compound = CompoundStatement();
-        return new BlockNode(declarations, compound, funcs, procs);
+        return new BlockNode(declarations, compound);
     }
-
     public ConstDeclsNode ConstDecls()
     {
         var decls = new List<ConstDeclNode>();

@@ -1,9 +1,8 @@
 using System.Collections.Specialized;
-using System.Data;
 
 namespace Parser.Sym;
 
-public abstract class Sym : ITreePrintable
+public abstract class Sym
 {
     public Sym(string name)
     {
@@ -11,11 +10,6 @@ public abstract class Sym : ITreePrintable
     }
 
     public string Name { get; }
-
-    public void PrintTree(string branchAscii)
-    {
-        throw new NotImplementedException();
-    }
 }
 
 public class SymType : Sym
