@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Lexer;
 
@@ -9,6 +10,7 @@ namespace ChekerOut;
 
 internal class Program
 {
+    private static int total;
     public static void ParserTest(string pathFile)
     {
         var fileReaderIn = new StreamReader(pathFile + ".in");
@@ -21,8 +23,6 @@ internal class Program
             var sw = new StringWriter();
             Console.SetOut(sw);
             parser.Expression().PrintTree("");
-            /*var originOutput = new StreamWriter(Console.OpenStandardOutput());
-            originOutput.AutoFlush = true;*/
             Console.SetOut(oldOut);
             var found = sw.ToString();
             if (line + "\r\n" != found)
@@ -54,7 +54,7 @@ internal class Program
         var fileReaderIn = new StreamReader(pathFile + ".in");
         var scan = new Scanner(fileReaderIn);
         var fileReaderOut = new StreamReader(pathFile + ".out");
-        while (!fileReaderIn.EndOfStream)
+        do
         {
             string line;
             line = fileReaderOut.ReadLine();
@@ -65,8 +65,8 @@ internal class Program
                 {
                     Console.WriteLine(pathFile + '\t' + "WA");
                     Console.WriteLine("expected:\n" + line);
-                    Console.Write("found:\n" + found);
-                    Environment.Exit(0);
+                    Console.WriteLine("found:\n" + found + "\n");
+                    //Environment.Exit(0);
                 }
             }
             catch (LexException e)
@@ -76,29 +76,81 @@ internal class Program
                 {
                     Console.WriteLine(pathFile + '\t' + "WA");
                     Console.WriteLine("expected:\n" + line);
-                    Console.Write("found:\n" + found);
-                    Environment.Exit(0);
+                    Console.WriteLine("found:\n" + found + "\n");
+                    //Environment.Exit(0);
                 }
+                break;
             }
-        }
-
+        } while (!fileReaderIn.EndOfStream);
         Console.WriteLine(pathFile + ".in\tOK");
+        total++;
+
     }
 
-    private static void Main(string[] args)
+    public static void MakeOutTest()
     {
-        Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+        var files = Directory.GetFiles("../../../../Tests/Lexer/", "*.in")
+            .Select(f => Path.GetFileName(f)[..^3]).ToList();
+        foreach (var nameFile in files)
+        {
+            var path = $"../../../../Tests/Lexer/{nameFile}.out";
+            try
+            {
+                // Create the file, or overwrite if the file exists.
+                using (FileStream fs = File.Create(path))
+                {
+                    var fileReaderIn = new StreamReader($"../../../../Tests/Lexer/{nameFile}.in");
+                    var scan = new Scanner(fileReaderIn);
+                    string text ="";
+                    do
+                    {
+                        try
+                        {
+                            var found = scan.ScannerLex().ToString();
+                            text += $"{found}\n";
+                        }
+                        catch (LexException e)
+                        {
+                            var found = e.Message;
+                            text += $"{found}";
+                            break;
+                        }
+                    } while (!fileReaderIn.EndOfStream);
+                    byte[] info = new UTF8Encoding(true).GetBytes(text);
+                    // Add some information to the file.
+                    fs.Write(info, 0, info.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+    }
 
+    public static void StartLexerTest()
+    {
+        total = 0;
         var files = Directory.GetFiles("../../../../Tests/Lexer/", "*.in")
             .Select(f => Path.GetFileName(f)[..^3]).ToList();
 
         Console.WriteLine("Lexer Test:");
         foreach (var file in files) LexerTest("../../../../Tests/Lexer/" + file);
-
-        /*var filesP = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
+        
+        Console.Out.Write($"TOTAL: {files.Count}/{total}");
+        
+    }
+    public static void StartParserTest()
+    {
+        var filesP = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
             .Select(f => Path.GetFileName(f)[..^3]).ToList();
 
         Console.WriteLine("\nParser Test:");
-        foreach (var file in filesP) ParserTest("../../../../Tests/Parser/" + file);*/
+        foreach (var file in filesP) ParserTest("../../../../Tests/Parser/" + file);
+    }
+    private static void Main(string[] args)
+    {
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+        StartLexerTest();
     }
 }

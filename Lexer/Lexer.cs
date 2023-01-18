@@ -58,6 +58,7 @@ public class Scanner : Buffer
                 {
                     if (file.EndOfStream)
                     {
+                        _curPos.Column++;
                         throw new LexException(PositionCur, "Unexpected end of file");
                     }
                     GetNext();
@@ -119,58 +120,6 @@ public class Scanner : Buffer
     {
         switch (_state)
         {
-            /*case States.Num:
-                var baseNum = Getbase(_cur);
-                var charBaseNum = _cur;
-                while (_state == States.Num)
-                {
-                    
-                    if (Peek() == '.')
-                    {
-                        GetNext();
-                        if (Peek() != '.')
-                        {
-                            var bufNum = _buf;
-                            _buf = Convert.ToInt64(_buf, baseNum).ToString();
-                            AddBuf(_cur);
-                            bufNum += _cur;
-
-                            while (true)
-                                if (char.IsDigit((char)Peek()))
-                                {
-                                    GetNext();
-                                    AddBuf(_cur);
-                                    bufNum += _cur;
-                                }
-                                else
-                                {
-                                    AddLex(LexType.Double,
-                                        Convert.ToDouble(_buf).ToString("E16", CultureInfo.InvariantCulture),
-                                        baseNum == 16 ? "$" + bufNum :
-                                        baseNum == 8 ? "&" + bufNum :
-                                        baseNum == 2 ? "%" + bufNum : bufNum);
-                                    _state = States.Fin;
-                                    return;
-                                }
-                        }
-                        Back();
-                    }
-
-                    if (IsDigit((char)Peek(), baseNum))
-                    {
-                        GetNext();
-                        AddBuf(_cur);
-                    }
-                    else
-                    {
-                        AddLex(LexType.Integer, Convert.ToInt32(_buf, baseNum),
-                            charBaseNum+_buf);
-                        _state = States.Fin;
-                    }
-                }
-
-                break;*/
-            
             case States.Num:
                 var baseNum = Getbase(_cur);
                 while (_state == States.Num)
@@ -252,7 +201,7 @@ public class Scanner : Buffer
 
             case States.Id:
                 while (_state == States.Id)
-                    if (char.IsLetterOrDigit((char)Peek()) || Peek() == '_')
+                    if ((char.IsLetterOrDigit((char)Peek()) || Peek() == '_'))
                     {
                         GetNext();
                         AddBuf(_cur);
@@ -335,16 +284,19 @@ public class Scanner : Buffer
                 {
                     var _localChar = "";
                     if (!char.IsDigit((char)Peek()))
-                        throw new LexException(PositionCur, "Char error");
+                        throw new LexException(PositionCur, $"Illegal character '{(char)Peek()}'");
 
                     while (char.IsDigit((char)Peek()))
                     {
                         GetNext();
                         _localChar += _cur;
+                        if (long.Parse(_localChar) > 65535)
+                        {
+                            throw new LexException(PositionCur, $"Illegal character '{_cur}'");
+                        }
                     }
-
                     _bufString += '#' + _localChar;
-                    AddBuf((char) int.Parse(_localChar));
+                    AddBuf((char) long.Parse(_localChar));
                     if (Peek() == '#')
                         GetNext();
                     else
@@ -375,9 +327,9 @@ public class Scanner : Buffer
                 while (Peek() != (char) 39)
                 {
                     if (file.EndOfStream)
-                        throw new LexException(PositionCur, "String error");
+                        throw new LexException(PositionCur, "Unclosed string constant lexeme");
                     if (Peek() == '\n')
-                        throw new LexException(PositionCur, "String line error");
+                        throw new LexException(PositionCur, "String exceeds line");
                     GetNext();
                     AddBuf(_cur);
                     _localString += _cur;
@@ -422,7 +374,7 @@ public class Scanner : Buffer
         SkipCommentSpace();
         Position = PositionCur;
         ClearBuf();
-        if (char.IsLetter(_cur) || _cur == '_')
+        if (char.IsLetter(_cur) || _cur == '_' || (_cur == '&' && char.IsLetter((char)Peek())))
         {
             AddBuf(_cur);
             _state = States.Id;

@@ -21,9 +21,7 @@ public class Lex
 
     public override string ToString()
     {
-        if (LexType == LexType.Eof)
-            return Line + "  " + Column + "  " + LexType;
-        return Line + "  " + Column + "  " + LexType + "  " + Value + "  " + Source;
+        return $"{Line}\t{Column}\t{LexType}\t{Value}\t{Source}";
     }
 
     public bool Is(params LexOperator[] ops)
