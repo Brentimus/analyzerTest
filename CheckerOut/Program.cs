@@ -10,7 +10,8 @@ namespace ChekerOut;
 
 internal class Program
 {
-    private static int total;
+    private static int total = 0;
+    private static int test = 0;
     public static void ParserTest(string pathFile)
     {
         var fileReaderIn = new StreamReader(pathFile + ".in");
@@ -51,6 +52,7 @@ internal class Program
 
     public static void LexerTest(string pathFile)
     {
+        test++;
         var fileReaderIn = new StreamReader(pathFile + ".in");
         var scan = new Scanner(fileReaderIn);
         var fileReaderOut = new StreamReader(pathFile + ".out");
@@ -82,7 +84,7 @@ internal class Program
                 break;
             }
         } while (!fileReaderIn.EndOfStream);
-        Console.WriteLine(pathFile + ".in\tOK");
+        Console.WriteLine($"TEST {test}\tOK");
         total++;
 
     }
@@ -130,15 +132,12 @@ internal class Program
 
     public static void StartLexerTest()
     {
-        total = 0;
         var files = Directory.GetFiles("../../../../Tests/Lexer/", "*.in")
             .Select(f => Path.GetFileName(f)[..^3]).ToList();
 
         Console.WriteLine("Lexer Test:");
         foreach (var file in files) LexerTest("../../../../Tests/Lexer/" + file);
-        
-        Console.Out.Write($"TOTAL: {files.Count}/{total}");
-        
+
     }
     public static void StartParserTest()
     {
@@ -152,5 +151,6 @@ internal class Program
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         StartLexerTest();
+        Console.Out.Write($"TOTAL: {test}/{total}");
     }
 }

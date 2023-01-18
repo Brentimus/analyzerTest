@@ -34,41 +34,47 @@ public class SymType : Sym
         return ResolveAlias().Name.Equals(other.ResolveAlias().Name);
     }
 }
+
 public class SymInteger : SymType
 {
     public SymInteger() : base("integer")
     {
     }
 }
+
 public class SymDouble : SymType
 {
     public SymDouble() : base("double")
     {
     }
 }
+
 public class SymBoolean : SymType
 {
     public SymBoolean() : base("boolean")
     {
     }
 }
+
 public class SymChar : SymType
 {
     public SymChar() : base("char")
     {
     }
 }
+
 public class SymString : SymType
 {
     public SymString() : base("string")
     {
     }
 }
+
 public class SymAlias : SymType
 {
     public SymType Original { get; }
 
-    public SymAlias(string name, SymType original) : base(name)
+    public SymAlias(Parser.IdNode id, SymType original) : base(id.ToString())
     {
         Original = original;
     }
@@ -78,36 +84,41 @@ public class SymAlias : SymType
         return Original;
     }
 }
+
 public class SymVar : Sym
 {
     public SymType SymType { get; }
 
-    public SymVar(string name, SymType symType) : base(name)
+    public SymVar(Parser.IdNode id, SymType symType) : base(id.ToString())
     {
         SymType = symType;
     }
 }
+
 public class SymConst : Sym
 {
-    public SymConst(string name) : base(name)
+    public SymConst(Parser.IdNode id) : base(id.ToString())
     {
     }
 }
+
 public class SymParam : SymVar
 {
-    public SymParam(string name, SymType symType) : base(name, symType)
+    public SymParam(Parser.IdNode id, SymType symType) : base(id, symType)
     {
     }
 }
+
 public class SymVarParam : SymParam
 {
-    public SymVarParam(string name, SymType symType) : base(name, symType)
+    public SymVarParam(Parser.IdNode id, SymType symType) : base(id, symType)
     {
     }
 }
+
 public class SymConstParam : SymParam
 {
-    public SymConstParam(string name, SymType symType) : base(name, symType)
+    public SymConstParam(Parser.IdNode id, SymType symType) : base(id, symType)
     {
     }
 }
@@ -133,38 +144,41 @@ public class SymRecord : SymType
         return true;
     }
 }
+
 public class SymArray : SymType
 {
     public SymType Type { get; }
     public List<Parser.TypeRangeNode> Range { get; }
-
     public SymArray(SymType type, List<Parser.TypeRangeNode> range) : base("array")
     {
         Type = type;
         Range = range;
     }
 }
+
 public class SymProcedure : Sym
-{
+{ 
     public SymTable Locals { get; }
     public Parser.CompoundStatementNode CompoundStatementNode { get; }
 
-    public SymProcedure(string name, SymTable locals, Parser.CompoundStatementNode compoundStatementNode) : base(name)
+    public SymProcedure(Parser.IdNode id, SymTable locals, Parser.CompoundStatementNode compoundStatementNode) :
+        base(id.ToString())
     {
         Locals = locals;
         CompoundStatementNode = compoundStatementNode;
     }
 }
-public class SymFunction : Sym
-{
-    public SymTable ReturnType { get; }
 
-    public SymFunction(string name, SymTable locals, Parser.CompoundStatementNode compoundStatementNode,
-        SymTable returnType) : base(name)
+public class SymFunction : SymProcedure
+{
+    public SymFunction(Parser.IdNode id, SymTable locals, Parser.CompoundStatementNode compoundStatementNode, SymType returnType) : 
+        base(id, locals, compoundStatementNode)
     {
         ReturnType = returnType;
     }
+    public SymType ReturnType { get; }
 }
+
 public class SymTable
 {
     public OrderedDictionary Data { get; }

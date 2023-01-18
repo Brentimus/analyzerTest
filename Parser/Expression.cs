@@ -6,6 +6,10 @@ public partial class Parser
 {
     public abstract class ExpressionNode : Node
     {
+        protected ExpressionNode(Lex lex = null) : base(lex)
+        {
+            
+        }
     }
     public class UnOpExpressionNode : ExpressionNode
     {
@@ -54,6 +58,46 @@ public partial class Parser
         }
     }
 
+    public class CallNode : ExpressionNode
+    {
+        public CallNode(IdNode name, List<ExpressionNode> args) : base(name.LexCur)
+        {
+            Args = args;
+        }
+
+        public List<ExpressionNode> Args { get; }
+    }
+
+    public class WriteCallNode : CallNode
+    {
+        public WriteCallNode(IdNode name, List<ExpressionNode> args, bool newLine) : base(name, args)
+        {
+            NewLine = newLine;
+        }
+        public bool NewLine { get; }
+    }
+    public class ReadCallNode : CallNode
+    {
+        public ReadCallNode(IdNode name, List<ExpressionNode> args, bool newLine) : base(name, args)
+        {
+            NewLine = newLine;
+        }
+        public bool NewLine { get; }
+    }
+
+    public CallNode Stream()
+    {
+        var lex = _curLex;
+        Eat();
+        Require(LexSeparator.Lparen);
+        List<ExpressionNode> args = new List<ExpressionNode>();
+        args = ExpressionList();
+        Require(LexSeparator.Rparen);
+        if (lex.Is(LexKeywords.WRITE, LexKeywords.WRITELN))
+            return new WriteCallNode(new IdNode(lex), args, lex.Is(LexKeywords.WRITELN));
+        return new ReadCallNode(new IdNode(lex), args, lex.Is(LexKeywords.READLN));
+
+    }
     public ExpressionNode Expression()
     {
         var left = SimpleExpression();
@@ -108,6 +152,11 @@ public partial class Parser
 
         switch (lex.LexType)
         {
+            case LexType.Keyword when 
+                lex.Is(LexKeywords.WRITE,LexKeywords.WRITELN):
+            case LexType.Keyword when 
+                lex.Is(LexKeywords.READ,LexKeywords.READLN):
+                return Stream();
             case LexType.Integer or LexType.Double:
                 Eat();
                 return new NumberExpressionNode(lex);

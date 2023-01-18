@@ -27,20 +27,20 @@ public class Lex
     public bool Is(params LexOperator[] ops)
     {
         if (LexType != LexType.Operator) return false;
-        return ops.Any(op => ((LexOperator) Value) == op);
+        return ops.Any(op => ( Equals(op.ToString(), Value.ToString())));
     }
 
     public bool Is(params LexSeparator[] ops)
     {
         if (LexType != LexType.Separator) return false;
         
-        return ops.Any(op => ((LexSeparator) Value) == op);
+        return ops.Any(op => ( Equals(op.ToString(), Value.ToString())));
     }
 
     public bool Is(params LexKeywords[] keys)
     {
         if (LexType != LexType.Keyword) return false;
-        return keys.Any(key => ((LexKeywords) Value) == key);
+        return keys.Any(key => ( Equals(key.ToString(), Value.ToString())));
     }
 
     public bool Is(LexType type)

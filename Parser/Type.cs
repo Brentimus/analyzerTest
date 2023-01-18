@@ -97,7 +97,7 @@ public partial class Parser
             foreach (var idNode in field.Ids)
             {
                 // TODO: get name in lower
-                table.Push(new SymVar(idNode.ToString(), field.Type), true);
+                table.Push(new SymVar(idNode, field.Type), true);
             }
         }
 

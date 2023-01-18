@@ -7,7 +7,7 @@ interface ITreePrintable
     public abstract void PrintTree(string branchAscii);
 }
 
-public partial class Parser
+public partial class Parser : Buffer
 {
     private readonly Scanner _scan;
     private Lex _curLex;
@@ -19,9 +19,8 @@ public partial class Parser
     
     public abstract class Node : ITreePrintable
     {
-        protected Node()
-        {
-        }
+        protected Node(Lex lex = null) => Lex = lex;
+        public Lex Lex { get; set; }
 
         public void PrintTree(string branchAscii)
         {
@@ -60,8 +59,8 @@ public partial class Parser
             name = Id();
             Require(LexSeparator.Semicolom);
         }
-
         BlockNode block = Block();
+        Require(LexSeparator.Dot);
         return new ProgramNode(name, block);
     }
     
@@ -105,7 +104,7 @@ public partial class Parser
             return;
         }
 
-        throw new Exception("Expected");
+        throw new SyntaxException(_curLex.Line,_curLex.Column, $"Expected '{sep}'");
     }
     public void Require(LexKeywords keyword, bool eat = true)
     {
@@ -119,7 +118,7 @@ public partial class Parser
             return;
         }
 
-        throw new Exception("Expected");
+        throw new SyntaxException(_curLex.Line,_curLex.Column, $"Expected '{keyword}'");
     }
 
     public Lex Eat()
@@ -131,17 +130,19 @@ public partial class Parser
     {
         if (!_curLex.Is(LexType.Identifier))
         {
-            throw new Exception("Expect id");
+            throw new SyntaxException(_curLex.Line,_curLex.Column, "Expect Identifier");
         }
 
-        return new IdNode(Eat());
+        var lex = _curLex;
+        Eat();
+        return new IdNode(lex);
     }
     public KeywordNode Keyword()
     {
         var lex = _curLex;
         if (!_curLex.Is(LexType.Keyword))
         {
-            throw new Exception("Expect keyword");
+            throw new Exception("Expect Keyword");
         }
         Eat();
         return new KeywordNode();

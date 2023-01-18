@@ -16,7 +16,7 @@ public partial class Parser
             States = states;
         }
 
-        public List<StatementNode> States;
+        public List<StatementNode> States { get; }
     }
 
     public class IfStatementNode : StatementNode
@@ -31,7 +31,6 @@ public partial class Parser
         public ExpressionNode Exp { get; }
         public StatementNode StateThen { get; }
         public StatementNode StateElse { get; }
-
     }
 
     public class ForStatementNode : StatementNode
@@ -51,7 +50,6 @@ public partial class Parser
         public ExpressionNode ExpTo { get; }
         public KeywordNode To { get; }
         public StatementNode State { get; }
-
     }
 
     public class WhileStatementNode : StatementNode
@@ -82,13 +80,19 @@ public partial class Parser
 
     public class FunctionCallStatementNode : StatementNode
     {
-        public FunctionCallStatementNode(IdNode id, List<IdNode> ids)
+        public FunctionCallStatementNode(IdNode id, List<ExpressionNode> args)
         {
-            Ids = ids;
+            Args = args;
             Id = id;
         }
 
-        public List<IdNode> Ids { get; }
+        public FunctionCallStatementNode(CallNode node)
+        {
+            Args = node.Args;
+            Lex = node.Lex;
+        }
+
+        public List<ExpressionNode> Args { get; }
         public IdNode Id { get; }
     }
 
@@ -101,15 +105,32 @@ public partial class Parser
     public StatementNode SimpleStatement()
     {
         //TODO: function_call_statement
-        var state = AssignmentStatement();
-        return state;
+        var left = Expression();
+        if (left is CallNode node)
+        {
+            return new FunctionCallStatementNode(node);
+        }
+
+        Lex op;
+        if (_curLex.Is(LexOperator.AssignSub, LexOperator.Assign, LexOperator.AssignAdd, LexOperator.AssignDiv,
+                LexOperator.AssignMul))
+        {
+            op = _curLex;
+        }
+        else
+        {
+            throw new Exception("AssignmentStatement");
+        }
+
+        var exp = Expression();
+        return new AssignmentStatementNode(left, op, exp);
     }
 
     public CompoundStatementNode CompoundStatement()
     {
         Require(LexKeywords.BEGIN);
         var states = StatementSequence();
-        Require(LexKeywords.END);
+        //Require(LexKeywords.END);
         return new CompoundStatementNode(states);
     }
 
@@ -122,8 +143,8 @@ public partial class Parser
             int checker = 0;
             while (_curLex.Is(LexSeparator.Semicolom))
             {
-                Eat();
                 checker++;
+                Eat();
             }
 
             if (_curLex.Is(LexKeywords.END))
@@ -165,37 +186,6 @@ public partial class Parser
         return null;
     }
 
-    public FunctionCallStatementNode FunctionCallStatement()
-    {
-        List<IdNode> ids = null;
-        var id = Id();
-        if (_curLex.Is(LexSeparator.Lparen))
-        {
-            Eat();
-            ids = IdList();
-            Require(LexSeparator.Rparen);
-        }
-
-        return new FunctionCallStatementNode(id, ids);
-    }
-
-    public AssignmentStatementNode AssignmentStatement()
-    {
-        var varRef = VarRef();
-        Lex op;
-        if (_curLex.Is(LexOperator.AssignSub, LexOperator.Assign, LexOperator.AssignAdd, LexOperator.AssignDiv,
-                LexOperator.AssignMul))
-        {
-            op = _curLex; //TODO:fix?
-        }
-        else
-        {
-            throw new Exception("");
-        }
-
-        var exp = Expression();
-        return new AssignmentStatementNode(varRef, op, exp);
-    }
     public ForStatementNode ForStatement()
     {
         Eat();
@@ -208,8 +198,8 @@ public partial class Parser
         Require(LexKeywords.DO);
         var state = Statement();
         return new ForStatementNode(id, expFor, to, expTo, state);
-
     }
+
     public WhileStatementNode WhileStatement()
     {
         Eat();
@@ -218,6 +208,7 @@ public partial class Parser
         var state = Statement();
         return new WhileStatementNode(exp, state);
     }
+
     public IfStatementNode IfStatement()
     {
         Eat();

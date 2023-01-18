@@ -10,10 +10,10 @@ internal class program
             var parser = new Parser.Parser(fileReader);
             try
             {
-                parser.Expression().PrintTree("");
+                parser.Program();
                 //Console.Write(parser.Expression().Calc());
             }
-            catch (Exception e)
+            catch (SyntaxException e)
             {
                 Console.Write(e.Message);
             }

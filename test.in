@@ -1,1 +1,2 @@
-123 + 123 + 123
+var a: Integer = 10;
+begin writeln(a); end.
