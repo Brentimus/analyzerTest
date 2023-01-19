@@ -88,12 +88,10 @@ public partial class Parser
     public SymRecord RecordType()
     {
         var fieldList = new List<FieldSelectionNode>();
-        Require(LexKeywords.RECORD);
         if (!_curLex.Is(LexKeywords.END))
         {
             fieldList = FieldList();
         }
-
         Require(LexKeywords.END);
         var table = new SymTable();
         foreach (var field in fieldList)
@@ -114,11 +112,11 @@ public partial class Parser
         fields.Add(FieldSelection());
         while (true)
         {
-            if (!_curLex.Is(LexSeparator.Semicolom))
+            if (_curLex.Is(LexSeparator.Semicolom))
             {
+                Eat();
                 break;
             }
-
             Eat();
             fields.Add(FieldSelection());
         }

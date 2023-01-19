@@ -4,8 +4,7 @@ namespace Lexer;
 
 public class Lex
 {
-    public int Column;
-    public int Line;
+    public Buffer.Pos Pos;
     public LexType LexType;
     public string Source;
     public object Value;
@@ -15,13 +14,12 @@ public class Lex
         LexType = lexType;
         Value = value;
         Source = source;
-        Line = pos.Line;
-        Column = pos.Column;
+        Pos = pos;
     }
 
     public override string ToString()
     {
-        return $"{Line}\t{Column}\t{LexType}\t{Value}\t{Source}";
+        return $"{Pos.Line}\t{Pos.Column}\t{LexType}\t{Value}\t{Source}";
     }
 
     public bool Is(params LexOperator[] ops)

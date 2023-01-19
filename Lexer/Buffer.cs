@@ -8,10 +8,10 @@ public class Buffer
     protected char? _back;
     protected char _cur;
 
-    public Pos _curPos = new Pos();
-    
-    public Pos Position { get => _pos; set => _pos = value; }
-    public Pos PositionCur { get => _curPos; set => _curPos = value; }
+    protected Pos _curPos = new Pos();
+
+    protected Pos Position { get => _pos; set => _pos = value; }
+    protected Pos PositionCur { get => _curPos; set => _curPos = value; }
 
     protected int Peek()
     {

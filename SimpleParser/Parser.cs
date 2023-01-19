@@ -58,24 +58,24 @@ public class SimpleParser
         }
 
         if (!Equals(lex.Value, LexSeparator.Lparen))
-            throw new Exception(_curLex.Line + ":" + _curLex.Column + " Factor expected");
+            throw new Exception(_curLex.Pos+"Factor expected");
         _curLex = _scan.ScannerLex();
         var e = ParseExpression();
 
         if (!Equals(_curLex.Value, LexSeparator.Rparen))
-            throw new Exception(_curLex.Line + ":" + _curLex.Column + " no Rparen");
+            throw new Exception(_curLex.Pos+"no Rparen");
         _curLex = _scan.ScannerLex();
         return e;
     }
 
     public abstract class Node
     {
-        protected Node(Lex lexeme)
+        public Node(Lex lexeme)
         {
             LexCur = lexeme;
         }
 
-        protected Lex LexCur { get; set; }
+        public Lex LexCur { get; set; }
 
         public abstract void PrintTree(string branchAscii);
     }

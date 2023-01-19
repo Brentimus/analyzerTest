@@ -1,8 +1,9 @@
+using System.Collections;
 using System.Collections.Specialized;
 
 namespace Parser.Sym;
 
-public abstract class Sym
+public abstract class Sym : Parser.IAcceptable
 {
     public Sym(string name)
     {
@@ -10,6 +11,7 @@ public abstract class Sym
     }
 
     public string Name { get; }
+    public abstract void Accept(IVisitor visitor);
 }
 
 public class SymType : Sym
@@ -27,12 +29,20 @@ public class SymType : Sym
     {
         return ResolveAlias().Name.Equals(other.ResolveAlias().Name);
     }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
 
 public class SymInteger : SymType
 {
     public SymInteger() : base("integer")
     {
+    }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }
 
@@ -41,12 +51,20 @@ public class SymDouble : SymType
     public SymDouble() : base("double")
     {
     }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
 
 public class SymBoolean : SymType
 {
     public SymBoolean() : base("boolean")
     {
+    }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }
 
@@ -55,12 +73,20 @@ public class SymChar : SymType
     public SymChar() : base("char")
     {
     }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
 
 public class SymString : SymType
 {
     public SymString() : base("string")
     {
+    }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }
 
@@ -77,46 +103,55 @@ public class SymAlias : SymType
     {
         return Original;
     }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
 
 public class SymVar : Sym
 {
-    public SymType SymType { get; }
+    public SymType Type { get; }
 
-    public SymVar(Parser.IdNode id, SymType symType) : base(id.ToString())
+    public SymVar(Parser.IdNode id, SymType type) : base(id.ToString())
     {
-        SymType = symType;
+        Type = type;
+    }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }
 
-public class SymConst : Sym
+public class SymConst : SymVar
 {
-    public SymConst(Parser.IdNode id) : base(id.ToString())
+    public SymConst(Parser.IdNode id, SymType type) : base(id, type)
     {
     }
 }
-
-public class SymParam : SymVar
-{
-    public SymParam(Parser.IdNode id, SymType symType) : base(id, symType)
-    {
-    }
-}
-
 public class SymVarParam : SymParam
 {
+
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
     public SymVarParam(Parser.IdNode id, SymType symType) : base(id, symType)
     {
     }
 }
-
 public class SymConstParam : SymParam
 {
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
     public SymConstParam(Parser.IdNode id, SymType symType) : base(id, symType)
     {
     }
 }
-
 public class SymRecord : SymType
 {
     public SymTable Fields { get; }
@@ -133,12 +168,15 @@ public class SymRecord : SymType
             return false;
         }
 
-        // TODO:
+        // TODO: ?
 
         return true;
     }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
-
 public class SymArray : SymType
 {
     public SymType Type { get; }
@@ -148,32 +186,53 @@ public class SymArray : SymType
         Type = type;
         Range = range;
     }
-}
-
-public class SymProcedure : Sym
-{ 
-    public SymTable Locals { get; }
-    public Parser.CompoundStatementNode CompoundStatementNode { get; }
-
-    public SymProcedure(Parser.IdNode id, SymTable locals, Parser.CompoundStatementNode compoundStatementNode) :
-        base(id.ToString())
+    public override void Accept(IVisitor visitor)
     {
-        Locals = locals;
-        CompoundStatementNode = compoundStatementNode;
+        visitor.Visit(this);
     }
 }
+public class SymParam : SymVar
+{
+    public SymParam(Parser.IdNode id, SymType symType) : base(id, symType)
+    {
+    }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+}
+public class SymProcedure : Sym
+{
+    public SymProcedure(Parser.IdNode id,SymTable locals, Parser.CompoundStatementNode compound) : base(id.ToString())
+    {
+        Locals = locals;
+        Compound = compound;
+        IsForward = true;
+    }
+    public SymTable Locals { get; set; }
+    public Parser.CompoundStatementNode Compound { get; set; }
+    public bool IsForward { get; set; }
 
+    
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+}
 public class SymFunction : SymProcedure
 {
-    public SymFunction(Parser.IdNode id, SymTable locals, Parser.CompoundStatementNode compoundStatementNode, SymType returnType) : 
-        base(id, locals, compoundStatementNode)
+    public SymType ReturnType { get; set; }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+    public SymFunction(Parser.IdNode id, SymTable locals, Parser.CompoundStatementNode compound, SymType returnType) : base(id, locals, compound)
     {
         ReturnType = returnType;
     }
-    public SymType ReturnType { get; }
 }
 
-public class SymTable
+public class SymTable : Parser.IAcceptable
 {
     public OrderedDictionary Data { get; }
 
@@ -234,6 +293,10 @@ public class SymTable
         Data.Add("string", new SymString());
         Data.Add("double", new SymDouble());
         Data.Add("boolean", new SymBoolean());
+    }
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }
 /*

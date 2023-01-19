@@ -52,7 +52,7 @@
 <var_ref> ::= <id> { <array_access> | <record_access> | <function_call> }
 <array_access> ::= "[" <expression_list> "]"
 <record_access> ::= "." <id>
-<function_call> ::= "(" [ <expression_list> ] ")"
+<function_call> ::= <id> "(" [ <expression_list> ] ")"
 
 // types
 <type> ::=  <primitive_type> | <array_type> | <record_type>

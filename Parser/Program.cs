@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Parser;
 
 internal class program
 {
@@ -10,8 +11,8 @@ internal class program
             var parser = new Parser.Parser(fileReader);
             try
             {
-                parser.Program();
-                //Console.Write(parser.Expression().Calc());
+                IVisitor visitor = new PrinterVisitor();
+                visitor.Visit(parser.Program());
             }
             catch (SyntaxException e)
             {

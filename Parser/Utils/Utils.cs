@@ -11,7 +11,6 @@ public partial class Parser
         while (true)
         {
             ids.Add(Id());
-            Eat();
             if (!_curLex.Is(LexSeparator.Comma))
                 break;
             Eat();

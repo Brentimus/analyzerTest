@@ -36,9 +36,9 @@ public partial class Parser
             StateElse = stateElse;
         }
 
-        public ExpressionNode Exp { get; }
-        public StatementNode StateThen { get; }
-        public StatementNode StateElse { get; }
+        public ExpressionNode Exp { get; set; }
+        public StatementNode StateThen { get; set; }
+        public StatementNode StateElse { get; set; }
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -106,10 +106,10 @@ public partial class Parser
     {
         public FunctionCallStatementNode(CallNode node)
         {
+            Name = node.Name;
             Args = node.Args;
-            Lex = node.Lex;
         }
-
+        public VarRefNode Name { get; }
         public List<ExpressionNode> Args { get; }
         public override void Accept(IVisitor visitor)
         {
@@ -137,6 +137,7 @@ public partial class Parser
                 LexOperator.AssignMul))
         {
             op = _curLex;
+            Eat();
         }
         else
         {

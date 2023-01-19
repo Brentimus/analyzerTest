@@ -10,7 +10,6 @@ public interface IVisitor
     
     //expression
     void Visit(Parser.BinOpExpressionNode node);
-    //void Visit(CastNode node);
     void Visit(Parser.UnOpExpressionNode node);
     void Visit(Parser.RecordAccess node);
     void Visit(Parser.ArrayAccess node);
@@ -36,7 +35,6 @@ public interface IVisitor
     void Visit(Parser.TypeDeclsNode node);
     void Visit(SymFunction node);
     void Visit(SymProcedure node);
-    void Visit(Parser.ParameterNode node);
     void Visit(SymAlias node);
     void Visit(Parser.KeywordNode node);
 
@@ -60,7 +58,13 @@ public interface IVisitor
     void Visit(Parser.FieldSelectionNode node);
     void Visit(Parser.ConstDeclNode node);
     void Visit(Parser.VarDeclNode node);
-    void Visit(Parser.ProcDelcNode node);
-    void Visit(Parser.FuncDelcNode node);
     void Visit(Parser.StatementNode node);
+    void Visit(SymConstParam node);
+    void Visit(SymVarParam node);
+    void Visit(SymParam node);
+    void Visit(SymConst node);
+    void Visit(SymVar node);
+    void Visit(SymTable node);
+    void Visit(Parser.ParamSelectionNode node);
+    void Visit(Parser.RelOpExpressionNode node);
 }

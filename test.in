@@ -1,2 +1,9 @@
-var a: Integer = 10;
-begin writeln(a); end.
+function a(): Integer;
+begin a := 10; end;
+
+function b(): Integer;
+begin b := 20; end;
+
+begin
+    writeln((a() + 30) * 4, (b() + 40) * 5);
+end.

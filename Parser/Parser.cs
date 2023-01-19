@@ -14,17 +14,23 @@ public partial class Parser : Buffer
         _curLex = _scan.ScannerLex();
     }
 
-    public abstract class Node
+    public interface IAcceptable
     {
-        protected Node(Lex lex = null) => Lex = lex;
-        public Lex Lex { get; set; }
-
-        public abstract void Accept(IVisitor visitor);
-        
+        public void Accept(IVisitor visitor);
     }
+
+    public abstract class Node : IAcceptable
+    {
+        public abstract void Accept(IVisitor visitor);
+        }
 
     public class KeywordNode : Node
     {
+        public KeywordNode(Lex lexCur)
+        {
+            LexCur = lexCur;
+        }
+        public Lex LexCur { get; set; }
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -50,7 +56,6 @@ public partial class Parser : Buffer
 
     public ProgramNode Program()
     {
-        // program name;
         IdNode? name = null;
         if (_curLex.Is(LexKeywords.PROGRAM))
         {
@@ -76,7 +81,7 @@ public partial class Parser : Buffer
             return;
         }
 
-        throw new Exception("Expected");
+        throw new SyntaxException(_curLex.Pos, $"Expected '{op}' Found '{_curLex.Value}'");
     }
 
     public void Require(LexType op, bool eat = true)
@@ -91,7 +96,7 @@ public partial class Parser : Buffer
             return;
         }
 
-        throw new Exception("Expected");
+        throw new SyntaxException(_curLex.Pos, $"Expected '{op}' Found '{_curLex.Value}'");
     }
 
     public void Require(LexSeparator sep, bool eat = true)
@@ -106,7 +111,7 @@ public partial class Parser : Buffer
             return;
         }
 
-        throw new SyntaxException(_curLex.Line, _curLex.Column, $"Expected '{sep}'");
+        throw new SyntaxException(_curLex.Pos, $"Expected '{sep}' Found '{_curLex.Value}'");
     }
 
     public void Require(LexKeywords keyword, bool eat = true)
@@ -121,7 +126,7 @@ public partial class Parser : Buffer
             return;
         }
 
-        throw new SyntaxException(_curLex.Line, _curLex.Column, $"Expected '{keyword}'");
+        throw new SyntaxException(_curLex.Pos, $"Expected '{keyword}' Found '{_curLex.Value}'");
     }
 
     public Lex Eat()
@@ -134,7 +139,7 @@ public partial class Parser : Buffer
     {
         if (!_curLex.Is(LexType.Identifier))
         {
-            throw new SyntaxException(_curLex.Line, _curLex.Column, "Expect Identifier");
+            throw new SyntaxException(_curLex.Pos, "Expect Identifier");
         }
 
         var lex = _curLex;
@@ -149,8 +154,7 @@ public partial class Parser : Buffer
         {
             throw new Exception("Expect Keyword");
         }
-
         Eat();
-        return new KeywordNode();
+        return new KeywordNode(lex);
     }
 }

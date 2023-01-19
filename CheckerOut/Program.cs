@@ -23,7 +23,7 @@ internal class Program
         {
             var sw = new StringWriter();
             Console.SetOut(sw);
-            parser.Expression().PrintTree("");
+            parser.Expression();
             Console.SetOut(oldOut);
             var found = sw.ToString();
             if (line + "\r\n" != found)
