@@ -261,11 +261,10 @@ public class PrinterVisitor : IVisitor
     {
         depth++;
         Print("func decl");
-        depth++;
-        Print(node.Name);
+            depth++;
+            Print(node.Name);
+            depth--;
         node.ReturnType.Accept(this);
-        depth--;
-        //node.ReturnType(this); //TODO: ?
         Print(node.Locals);
         node.Compound.Accept(this);
         depth--;
@@ -289,7 +288,7 @@ public class PrinterVisitor : IVisitor
             depth++;
             Print(node.Name);
             depth--;
-       //node.Original(this); //TODO: ?
+        node.Original.Accept(this);
        depth--;
     }
 
