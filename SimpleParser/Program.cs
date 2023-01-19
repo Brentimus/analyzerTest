@@ -12,7 +12,6 @@ internal class program
             try
             {
                 parser.ParseExpression().PrintTree("");
-                //Console.Write(parser.ParseExpression().Calc());
             }
             catch (Exception e)
             {

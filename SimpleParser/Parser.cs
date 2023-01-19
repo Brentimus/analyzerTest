@@ -56,14 +56,13 @@ public class SimpleParser
                 _curLex = _scan.ScannerLex();
                 return new IdNode(lex);
         }
-
         if (!Equals(lex.Value, LexSeparator.Lparen))
-            throw new Exception(_curLex.Pos+"Factor expected");
+            throw new SyntaxException(_curLex.Pos, "Factor expected");
         _curLex = _scan.ScannerLex();
         var e = ParseExpression();
-
+        
         if (!Equals(_curLex.Value, LexSeparator.Rparen))
-            throw new Exception(_curLex.Pos+"no Rparen");
+            throw new SyntaxException(_curLex.Pos,"no Rparen");
         _curLex = _scan.ScannerLex();
         return e;
     }

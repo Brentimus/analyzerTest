@@ -452,7 +452,7 @@ public class PrinterVisitor : IVisitor
 
     public void Visit(SymConst node)
     {
-        
+        throw new NotImplementedException();
     }
 
     public void Visit(SymVar node)

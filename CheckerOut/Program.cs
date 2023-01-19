@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using Lexer;
+using SimpleParser = SimpleParser.SimpleParser;
 
 namespace ChekerOut;
 
@@ -14,8 +15,9 @@ internal class Program
     private static int test = 0;
     public static void ParserTest(string pathFile)
     {
+        test++;
         var fileReaderIn = new StreamReader(pathFile + ".in");
-        var parser = new Parser.Parser(fileReaderIn);
+        var parser = new global::SimpleParser.SimpleParser(fileReaderIn);
         var fileReaderOut = new StreamReader(pathFile + ".out");
         var line = fileReaderOut.ReadToEnd();
         var oldOut = Console.Out;
@@ -23,7 +25,7 @@ internal class Program
         {
             var sw = new StringWriter();
             Console.SetOut(sw);
-            parser.Expression();
+            parser.ParseExpression().PrintTree("");
             Console.SetOut(oldOut);
             var found = sw.ToString();
             if (line + "\r\n" != found)
@@ -47,7 +49,8 @@ internal class Program
             }
         }
 
-        Console.WriteLine(pathFile + ".in\tOK");
+        Console.WriteLine($"TEST {test}\tOK");
+        total++;
     }
 
     public static void LexerTest(string pathFile)
@@ -86,7 +89,6 @@ internal class Program
         } while (!fileReaderIn.EndOfStream);
         Console.WriteLine($"TEST {test}\tOK");
         total++;
-
     }
 
     public static void MakeOutTest()
@@ -141,16 +143,17 @@ internal class Program
     }
     public static void StartParserTest()
     {
-        var filesP = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
+        var filesP = Directory.GetFiles("../../../../Tests/SimpleParser/", "*.in")
             .Select(f => Path.GetFileName(f)[..^3]).ToList();
 
-        Console.WriteLine("\nParser Test:");
-        foreach (var file in filesP) ParserTest("../../../../Tests/Parser/" + file);
+        Console.WriteLine("SimpleParser Test:");
+        foreach (var file in filesP) ParserTest("../../../../Tests/SimpleParser/" + file);
     }
     private static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
         StartLexerTest();
+        StartParserTest();
         Console.Out.Write($"TOTAL: {test}/{total}");
     }
 }
