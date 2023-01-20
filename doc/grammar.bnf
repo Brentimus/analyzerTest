@@ -26,7 +26,7 @@
 <procedure_declaration> ::= <procedure_header> {<const_declaration> | <var_declaration> | <type_declaration>} <compound_statement> ";"
 <procedure_header> ::= "procedure" <id> "(" <parameters> ")" ";"
 
-<parameters> ::= <parameter> {"," <parameter>}
+<parameters> ::= <parameter> {";" <parameter>}
 <parameter> ::= ["var" | "const"] <id_list> ":" <type>
 
 // statements

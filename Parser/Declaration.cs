@@ -140,7 +140,7 @@ public partial class Parser
     }
     public ParamSelectionNode Parameter()
     {
-        KeywordNode modifier = null;
+        KeywordNode modifier = null!;
         if (_curLex.Is(LexKeywords.VAR, LexKeywords.CONST))
         {
             modifier = Keyword();
@@ -151,13 +151,14 @@ public partial class Parser
     }
     public SymFunction FuncDecl()
     {
+        Eat();
         IdNode id = Id();
         Require(LexSeparator.Lparen);
         var locals = new List<ParamSelectionNode>();
         if (!_curLex.Is(LexSeparator.Rparen))
         {
             locals.Add(Parameter());
-            while (_curLex.Is(LexSeparator.Comma))
+            while (_curLex.Is(LexSeparator.Semicolom))
             {
                 Eat();
                 locals.Add(Parameter());
@@ -167,20 +168,7 @@ public partial class Parser
         Require(LexSeparator.Colon);
         var type = Type();
         Require(LexSeparator.Semicolom);
-        while (true)
-        {
-            if (_curLex.Is(LexKeywords.CONST))
-            {
-                ConstDecls();
-            } else if (_curLex.Is(LexKeywords.VAR))
-            {
-                VarDecls();
-            }else if (_curLex.Is(LexKeywords.TYPE))
-            {
-                TypeDecls();
-            } else break;
-        }
-
+        var decls = CallBlock();
         var compound = CompoundStatement();
         Require(LexSeparator.Semicolom);
         var table = new SymTable();
@@ -191,34 +179,26 @@ public partial class Parser
                 table.Push(new SymVar(idNode, local.Type), true);
             }
         }
-        return new SymFunction(id, table, compound, type);
+        return new SymFunction(id, table, new BlockNode(decls, compound), type);
     }
     public SymProcedure ProcDecl()
     {
+        Eat();
         IdNode id = Id();
         Require(LexSeparator.Lparen);
         var locals = new List<ParamSelectionNode>();
-        locals.Add(Parameter());
-        while (_curLex.Is(LexSeparator.Comma))
+        if (!_curLex.Is(LexSeparator.Rparen))
         {
-            Eat();
             locals.Add(Parameter());
+            while (_curLex.Is(LexSeparator.Semicolom))
+            {
+                Eat();
+                locals.Add(Parameter());
+            }
         }
         Require(LexSeparator.Rparen);
         Require(LexSeparator.Semicolom);
-        while (true)
-        {
-            if (_curLex.Is(LexKeywords.CONST))
-            {
-                ConstDecls();
-            } else if (_curLex.Is(LexKeywords.VAR))
-            {
-                VarDecls();
-            }else if (_curLex.Is(LexKeywords.TYPE))
-            {
-                TypeDecls();
-            } else break;
-        }
+        var decls = CallBlock();
         var compound = CompoundStatement();
         Require(LexSeparator.Semicolom);
         var table = new SymTable();
@@ -230,7 +210,31 @@ public partial class Parser
             }
         }
 
-        return new SymProcedure(id, table, compound);
+        return new SymProcedure(id, table, new BlockNode(decls, compound));
+    }
+
+    public List<IAcceptable> CallBlock()
+    {
+        var declarations = new List<IAcceptable>();
+        while (true)
+        {
+            if (_curLex.Is(LexKeywords.VAR))
+            {
+                declarations.Add(VarDecls());
+            }
+            else if (_curLex.Is(LexKeywords.TYPE))
+            {
+                declarations.Add(TypeDecls());
+            }
+            else if (_curLex.Is(LexKeywords.CONST))
+            {
+                declarations.Add(ConstDecls());
+            }else
+            {
+                break;
+            }
+        }
+        return declarations;
     }
     public BlockNode Block()
     {
@@ -239,27 +243,22 @@ public partial class Parser
         {
             if (_curLex.Is(LexKeywords.VAR))
             {
-                Eat();
                 declarations.Add(VarDecls());
             }
             else if (_curLex.Is(LexKeywords.TYPE))
             {
-                Eat();
                 declarations.Add(TypeDecls());
             }
             else if (_curLex.Is(LexKeywords.CONST))
             {
-                Eat();
                 declarations.Add(ConstDecls());
             }
             else if (_curLex.Is(LexKeywords.PROCEDURE))
             {
-                Eat();
                 declarations.Add(ProcDecl());
             }
             else if (_curLex.Is(LexKeywords.FUNCTION))
             {
-                Eat();
                 declarations.Add(FuncDecl());
             }
             else
@@ -272,6 +271,7 @@ public partial class Parser
     }
     public ConstDeclsNode ConstDecls()
     {
+        Eat();
         var decls = new List<ConstDeclNode>();
         decls.Add(ConstDecl());
         while (_curLex.Is(LexType.Identifier))
@@ -310,6 +310,7 @@ public partial class Parser
     }
     public TypeDeclsNode TypeDecls()
     {
+        Eat();
         var decls = new List<SymAlias>();
         decls.Add(TypeDecl());
         while (_curLex.Is(LexType.Identifier))
@@ -321,6 +322,7 @@ public partial class Parser
     }
     public VarDeclsNode VarDecls()
     {
+        Eat();
         var dels = new List<VarDeclNode>();
         dels.Add(VarDecl());
         while (_curLex.Is(LexType.Identifier))
@@ -343,7 +345,6 @@ public partial class Parser
         }
         Require(LexSeparator.Colon);
         var type = Type();
-        
         foreach (var i in names)
         {
             symVarParam.Add(new SymVarParam(i, type));

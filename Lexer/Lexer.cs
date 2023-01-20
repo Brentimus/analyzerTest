@@ -68,7 +68,8 @@ public class Scanner : Buffer
             else if (IsSpace(_cur))
             {
                 SkipSpace();
-            } else break;
+            } 
+            else break;
         }
     }
     private void SkipSpace()
@@ -88,7 +89,8 @@ public class Scanner : Buffer
     }
     private object SearchKeyword()
     {
-        if (Enum.TryParse(_buf, true, out LexKeywords keyWords)) return Enum.Parse(typeof(LexKeywords), _buf, true);
+        if (Enum.TryParse(_buf, true, out LexKeywords keyWords))
+            return Enum.Parse(typeof(LexKeywords), _buf, true);
         return "";
     }
     private void AddLex(LexType id, object value, string source)
@@ -303,7 +305,7 @@ public class Scanner : Buffer
                         break;
                 }
 
-                if (Peek() == (char) 39)
+                if (Peek() == '\'') 
                 {
                     GetNext();
                     _state = States.Str;

@@ -203,14 +203,14 @@ public class SymParam : SymVar
 }
 public class SymProcedure : Sym
 {
-    public SymProcedure(Parser.IdNode id,SymTable locals, Parser.CompoundStatementNode compound) : base(id.ToString())
+    public SymProcedure(Parser.IdNode id,SymTable locals, Parser.BlockNode block) : base(id.ToString())
     {
         Locals = locals;
-        Compound = compound;
+        Block = block;
         IsForward = true;
     }
     public SymTable Locals { get; set; }
-    public Parser.CompoundStatementNode Compound { get; set; }
+    public Parser.BlockNode Block { get; set; }
     public bool IsForward { get; set; }
 
     
@@ -221,14 +221,14 @@ public class SymProcedure : Sym
 }
 public class SymFunction : SymProcedure
 {
-    public SymType ReturnType { get; set; }
+    public SymFunction(Parser.IdNode id, SymTable locals, Parser.BlockNode block, SymType returnType) : base(id, locals, block)
+    {
+        ReturnType = returnType;
+    }
+    public SymType ReturnType { get; }
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
-    }
-    public SymFunction(Parser.IdNode id, SymTable locals, Parser.CompoundStatementNode compound, SymType returnType) : base(id, locals, compound)
-    {
-        ReturnType = returnType;
     }
 }
 

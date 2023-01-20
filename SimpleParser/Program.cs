@@ -13,7 +13,7 @@ internal class program
             {
                 parser.ParseExpression().PrintTree("");
             }
-            catch (Exception e)
+            catch (SyntaxException e)
             {
                 Console.Write(e.Message);
             }

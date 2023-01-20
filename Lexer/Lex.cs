@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace Lexer;
@@ -25,20 +26,19 @@ public class Lex
     public bool Is(params LexOperator[] ops)
     {
         if (LexType != LexType.Operator) return false;
-        return ops.Any(op => ( Equals(op.ToString(), Value.ToString())));
+        return ops.Any(op => op == (LexOperator) Value);
     }
 
     public bool Is(params LexSeparator[] ops)
     {
         if (LexType != LexType.Separator) return false;
         
-        return ops.Any(op => ( Equals(op.ToString(), Value.ToString())));
+        return ops.Any(op => op == (LexSeparator) Value);
     }
-
     public bool Is(params LexKeywords[] keys)
     {
         if (LexType != LexType.Keyword) return false;
-        return keys.Any(key => ( Equals(key.ToString(), Value.ToString())));
+        return keys.Any(key =>  key == (LexKeywords) Enum.Parse(typeof(LexKeywords), Value.ToString()));
     }
 
     public bool Is(LexType type)

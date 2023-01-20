@@ -71,7 +71,7 @@ internal class Program
                     Console.WriteLine(pathFile + '\t' + "WA");
                     Console.WriteLine("expected:\n" + line);
                     Console.WriteLine("found:\n" + found + "\n");
-                    //Environment.Exit(0);
+                    Environment.Exit(0);
                 }
             }
             catch (LexException e)
@@ -82,7 +82,7 @@ internal class Program
                     Console.WriteLine(pathFile + '\t' + "WA");
                     Console.WriteLine("expected:\n" + line);
                     Console.WriteLine("found:\n" + found + "\n");
-                    //Environment.Exit(0);
+                    Environment.Exit(0);
                 }
                 break;
             }

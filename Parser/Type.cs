@@ -8,33 +8,36 @@ public partial class Parser
     public SymType Type()
     {
         var lex = _curLex;
-        if (lex.Is(LexType.Identifier))
+        if (lex.Is(LexType.Identifier) || lex.Is(LexKeywords.STRING))
         {
             return PrimitiveType();
         }
         if (lex.Is(LexKeywords.ARRAY))
         {
-            Eat();
             return ArrayType();
         }
 
         if (lex.Is(LexKeywords.RECORD))
         {
-            Eat();
             return RecordType();
         }
-        throw new Exception("");
+        throw new SyntaxException( _curLex.Pos, "type expected");
     }
 
     public SymType PrimitiveType()
     {
         if (_curLex.Is(LexKeywords.STRING))
-            return new SymType(_curLex.Value.ToString().ToLower()); //TODO: Maybe wrong
+        {
+            var lex = _curLex;
+            Eat();
+            return new SymType(lex.Value.ToString()!.ToLower());
+        }
         return new SymType(Id().ToString());
     }
 
     public SymArray ArrayType()
     {
+        Eat();
         Require(LexSeparator.Lbrack);
         var range = TypeRanges();
         Require(LexSeparator.Rbrack);
@@ -87,22 +90,24 @@ public partial class Parser
 
     public SymRecord RecordType()
     {
-        var fieldList = new List<FieldSelectionNode>();
-        if (!_curLex.Is(LexKeywords.END))
+        Eat();
+        var fieldList = new List<List<FieldSelectionNode>>();
+        while (!_curLex.Is(LexKeywords.END))
         {
-            fieldList = FieldList();
+            fieldList.Add(FieldList());
         }
         Require(LexKeywords.END);
         var table = new SymTable();
-        foreach (var field in fieldList)
+        foreach (var filds in fieldList)
         {
-            foreach (var idNode in field.Ids)
+            foreach (var field in filds)
             {
-                // TODO: get name in lower
-                table.Push(new SymVar(idNode, field.Type), true);
+                foreach (var idNode in field.Ids)
+                {
+                    table.Push(new SymVar(idNode, field.Type), true);
+                }
             }
         }
-
         return new SymRecord(table);
     }
 

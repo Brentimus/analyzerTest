@@ -26,19 +26,6 @@ public class PrinterVisitor : IVisitor
             node.Accept(this);
         }
     }
-    public void Print(SymTable nodeFields)
-    {
-        foreach (var i in nodeFields.Data.Values)
-        {
-            PrintDepth();
-            Console.WriteLine(i);
-        }
-        foreach (var i in nodeFields.Data.Keys)
-        {
-            PrintDepth();
-            Console.WriteLine(i);
-        }
-    }
     public void Print(Lex lex)
     {
         PrintDepth();
@@ -113,7 +100,6 @@ public class PrinterVisitor : IVisitor
         Print(node.Args);
         depth--;
     }
-
     public void Visit(Parser.WriteCallNode node)
     {
         depth++;
@@ -121,7 +107,10 @@ public class PrinterVisitor : IVisitor
             Print("writeln");
         else
             Print("write");
-        Print(node.Args);
+        if (node.Args is not null)
+        {
+            Print(node.Args);
+        }
         depth--;
     }
 
@@ -132,7 +121,10 @@ public class PrinterVisitor : IVisitor
             Print("readln");
         else
             Print("read");
-        Print(node.Args);
+        if (node.Args is not null)
+        {
+            Print(node.Args);
+        }
         depth--;
     }
 
@@ -221,7 +213,10 @@ public class PrinterVisitor : IVisitor
         depth++;
         Print("const");
         node.SymConst.Accept(this);
-        node.Exp.Accept(this);
+        if (node.Exp is not null)
+        {
+            node.Exp.Accept(this);
+        }
         depth--;
     }
 
@@ -244,7 +239,7 @@ public class PrinterVisitor : IVisitor
         }
         else
         {
-            Print("no exp");
+            Print("no expression");
         }
         depth--;
     }
@@ -265,8 +260,8 @@ public class PrinterVisitor : IVisitor
             Print(node.Name);
             depth--;
         node.ReturnType.Accept(this);
-        Print(node.Locals);
-        node.Compound.Accept(this);
+        node.Locals.Accept(this);
+        node.Block.Accept(this);
         depth--;
     }
 
@@ -277,14 +272,14 @@ public class PrinterVisitor : IVisitor
             depth++;
             Print(node.Name);
             depth--;
-        Print(node.Locals);
-        node.Compound.Accept(this);
+        node.Locals.Accept(this);
+        node.Block.Accept(this);
         depth--;
     }
     public void Visit(SymAlias node)
     {
         depth++;
-        Print("type def");
+        Print("def type");
             depth++;
             Print(node.Name);
             depth--;
@@ -371,18 +366,16 @@ public class PrinterVisitor : IVisitor
 
     public void Visit(SymType node)
     {
-        depth++;
         Print("type");
-            depth++;
-            Print(node.Name);
-            depth--;
+        depth++;
+        Print(node.Name);
         depth--;
     }
 
     public void Visit(SymArray node)
     {
         depth++;
-        Print("array type");
+        Print(node.Name);
         node.Type.Accept(this);
         Print(node.Range);
         depth--;
@@ -391,8 +384,8 @@ public class PrinterVisitor : IVisitor
     public void Visit(SymRecord node)
     {
         depth++;
-        Print("record");
-        Print(node.Fields);
+        Print(node.Name);
+        node.Fields.Accept(this);
         depth--;
     }
     public void Visit(Parser.TypeRangeNode node)
@@ -419,7 +412,6 @@ public class PrinterVisitor : IVisitor
 
     public void Visit(SymConstParam node)
     {
-        depth++;
         if (node.Type is null)
         {
             node.Type.Accept(this);
@@ -428,12 +420,10 @@ public class PrinterVisitor : IVisitor
         {
             Print("no type");
         }
-        depth--;
     }
 
     public void Visit(SymVarParam node)
     {
-        depth++;
         if (node.Type is null)
         {
             Print("no type");
@@ -442,7 +432,6 @@ public class PrinterVisitor : IVisitor
         {
             node.Type.Accept(this);
         }
-        depth--;
     }
 
     public void Visit(SymParam node)
@@ -454,15 +443,29 @@ public class PrinterVisitor : IVisitor
     {
         throw new NotImplementedException();
     }
-
     public void Visit(SymVar node)
     {
-        throw new NotImplementedException();
+        depth++;
+        Print(node.Name);
+        if (node.Type is not null)
+        { 
+            node.Type.Accept(this);
+        }
+        else
+        {
+            Print("no type");
+        }
+        depth--;
     }
 
     public void Visit(SymTable node)
     {
-        throw new NotImplementedException();
+        foreach (var key in node.Data.Keys)
+        {
+            var keyCasted = key as string;
+            var valueCasted = node.Data[key] as SymVar;
+            valueCasted.Accept(this);
+        }
     }
 
     public void Visit(Parser.ParamSelectionNode node)

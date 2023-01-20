@@ -200,10 +200,13 @@ public partial class Parser
     {
         var lex = _curLex;
         Eat();
-        Require(LexSeparator.Lparen);
-        List<ExpressionNode> args = new List<ExpressionNode>();
-        args = ExpressionList();
-        Require(LexSeparator.Rparen);
+        var args = new List<ExpressionNode>();
+        if (_curLex.Is(LexSeparator.Lparen))
+        {
+            Eat();
+            args = ExpressionList();
+            Require(LexSeparator.Rparen);
+        }
         if (lex.Is(LexKeywords.WRITE, LexKeywords.WRITELN))
             return new WriteCallNode(new IdNode(lex), args, lex.Is(LexKeywords.WRITELN));
         return new ReadCallNode(new IdNode(lex), args, lex.Is(LexKeywords.READLN));
@@ -213,14 +216,12 @@ public partial class Parser
     {
         var left = SimpleExpression();
         var lex = _curLex;
-        while (lex.Is(LexOperator.Equal, LexOperator.Less, LexOperator.More, LexOperator.NoEqual, LexOperator.LessEqual,
-                   LexOperator.MoreEqual))
+        if (lex.Is(LexOperator.Equal, LexOperator.Less, LexOperator.More, LexOperator.NoEqual, LexOperator.LessEqual,
+                   LexOperator.MoreEqual) || lex.Is(LexKeywords.OR, LexKeywords.IN))
         {
             Eat();
             left = new RelOpExpressionNode(lex, left, SimpleExpression());
-            lex = _curLex;
         }
-
         return left;
     }
     private ExpressionNode SimpleExpression()
@@ -261,31 +262,38 @@ public partial class Parser
     {
         var lex = _curLex;
 
-        switch (lex.LexType)
+        if (lex.Is(LexType.String))
         {
-            case LexType.Keyword when 
-                lex.Is(LexKeywords.WRITE,LexKeywords.WRITELN):
-            case LexType.Keyword when 
-                lex.Is(LexKeywords.READ,LexKeywords.READLN):
-                return Stream();
-            case LexType.Integer or LexType.Double:
-                Eat();
-                return new NumberExpressionNode(lex);//TODO: fix
-            case LexType.String:
-                Eat();
-                return new StringNode(lex);
-            case LexType.Identifier:
-                return VarRef();
-            case LexType.Keyword:
-                if (lex.Is(LexKeywords.TRUE, LexKeywords.FALSE))
-                    return new BooleanNode(lex);
-                break;
+            Eat();
+            return new StringNode(lex);
         }
-
-        Require(LexSeparator.Lparen);
-        var e = Expression();
-        Require(LexSeparator.Rparen);
-        return e;
+        if (lex.Is(LexType.Integer) || lex.Is(LexType.Double))
+        {
+            Eat();
+            return new NumberExpressionNode(lex);
+        }
+        if (lex.Is(LexType.Keyword))
+        {
+            if (lex.Is(LexKeywords.TRUE, LexKeywords.FALSE))
+                return new BooleanNode(lex);
+        }
+        if (lex.Is(LexType.Identifier))
+        {
+            return VarRef();
+        }
+        if (lex.Is(LexKeywords.WRITE, LexKeywords.READ, LexKeywords.WRITELN, LexKeywords.READLN))
+        {
+            return Stream();
+        }
+        if (lex.Is(LexSeparator.Lparen))
+        {
+            Eat();
+            var e = Expression();
+            Require(LexSeparator.Rparen);
+            return e;
+        }
+        
+        throw new SyntaxException(lex.Pos, "factor expected");
     }
     public VarRefNode VarRef()
     {
@@ -335,10 +343,8 @@ public partial class Parser
 
                 lex = _curLex;
             }
-            else
-            {
-                return left;
-            }
+            else break;
         }
+        return left;
     }
 }

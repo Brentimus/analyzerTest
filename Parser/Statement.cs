@@ -125,40 +125,35 @@ public partial class Parser
 
     public StatementNode SimpleStatement()
     {
-        //TODO: function_call_statement
         var left = Expression();
-        if (left is CallNode node)
+        if (left is CallNode callNode)
         {
-            return new FunctionCallStatementNode(node);
+            return new FunctionCallStatementNode(callNode);
+            
+        }
+        if (left is VarRefNode)
+        {
+            Lex op;
+            if (_curLex.Is(LexOperator.AssignSub, LexOperator.Assign, 
+                    LexOperator.AssignAdd, LexOperator.AssignDiv, LexOperator.AssignMul))
+            {
+                op = _curLex;
+                Eat();
+            }
+            else
+            {
+                throw new SyntaxException(_curLex.Pos, "Illegal expression");
+            }
+
+            var exp = Expression();
+            return new AssignmentStatementNode(left, op, exp);
         }
 
-        Lex op;
-        if (_curLex.Is(LexOperator.AssignSub, LexOperator.Assign, LexOperator.AssignAdd, LexOperator.AssignDiv,
-                LexOperator.AssignMul))
-        {
-            op = _curLex;
-            Eat();
-        }
-        else
-        {
-            throw new Exception("AssignmentStatement");
-        }
-
-        var exp = Expression();
-        return new AssignmentStatementNode(left, op, exp);
+        throw new SyntaxException(_curLex.Pos, "Illegal statement");
     }
-
     public CompoundStatementNode CompoundStatement()
     {
-        Require(LexKeywords.BEGIN);
-        var states = StatementSequence();
-        //Require(LexKeywords.END);
-        return new CompoundStatementNode(states);
-    }
-
-    public List<StatementNode> StatementSequence()
-    {
-        //TODO: Exception ?
+        Eat();
         var states = new List<StatementNode>();
         while (true)
         {
@@ -166,7 +161,7 @@ public partial class Parser
             while (_curLex.Is(LexSeparator.Semicolom))
             {
                 checker++;
-                Eat();
+                Require(LexSeparator.Semicolom);
             }
 
             if (_curLex.Is(LexKeywords.END))
@@ -175,39 +170,34 @@ public partial class Parser
                 break;
             }
 
-            if (states.Count > 0 && checker == 0)
+            if (checker == 0 && states.Count != 0)
                 Require(LexSeparator.Semicolom);
             states.Add(Statement());
         }
-
-        return states;
+        return new CompoundStatementNode(states);
     }
-
     public StatementNode? StructuredStatement()
     {
         if (_curLex.Is(LexKeywords.BEGIN))
         {
-            CompoundStatement();
+            return CompoundStatement();
         }
-
         if (_curLex.Is(LexKeywords.WHILE))
         {
-            WhileStatement();
+            return WhileStatement();
         }
 
         if (_curLex.Is(LexKeywords.FOR))
         {
-            ForStatement();
+            return ForStatement();
         }
 
         if (_curLex.Is(LexKeywords.IF))
         {
-            IfStatement();
+            return IfStatement();
         }
-
         return null;
     }
-
     public ForStatementNode ForStatement()
     {
         Eat();
@@ -221,7 +211,6 @@ public partial class Parser
         var state = Statement();
         return new ForStatementNode(id, expFor, to, expTo, state);
     }
-
     public WhileStatementNode WhileStatement()
     {
         Eat();
@@ -230,7 +219,6 @@ public partial class Parser
         var state = Statement();
         return new WhileStatementNode(exp, state);
     }
-
     public IfStatementNode IfStatement()
     {
         Eat();
