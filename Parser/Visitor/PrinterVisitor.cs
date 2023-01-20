@@ -12,13 +12,11 @@ public class PrinterVisitor : IVisitor
     {
         Console.Write("".PadRight(depth * 3, ' '));
     }
-
     public void Print(string str)
     {
         PrintDepth();
         Console.WriteLine(str);
     }
-    
     public void Print(IEnumerable<Parser.IAcceptable> nodes)
     {
         foreach (var node in nodes)
@@ -30,8 +28,7 @@ public class PrinterVisitor : IVisitor
     {
         PrintDepth();
         Console.WriteLine(lex.Value.ToString().ToLower());
-    } 
-    
+    }
     public void Visit(Parser.ProgramNode node)
     {
         Print("main");
@@ -47,7 +44,6 @@ public class PrinterVisitor : IVisitor
         }
         node.Block.Accept(this);
     }
-
     public void Visit(Parser.BinOpExpressionNode node)
     {
         depth++;
@@ -56,7 +52,6 @@ public class PrinterVisitor : IVisitor
         node.Right.Accept(this);
         depth--;
     }
-    
     public void Visit(Parser.RelOpExpressionNode node)
     {
         depth++;
@@ -65,7 +60,6 @@ public class PrinterVisitor : IVisitor
         node.Right.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.UnOpExpressionNode node)
     {
         depth++;
@@ -73,7 +67,6 @@ public class PrinterVisitor : IVisitor
         node.Node.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.RecordAccess node)
     {
         depth++;
@@ -82,7 +75,6 @@ public class PrinterVisitor : IVisitor
         node.Field.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.ArrayAccess node)
     {
         depth++;
@@ -91,7 +83,6 @@ public class PrinterVisitor : IVisitor
         node.ArrayExp.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.CallNode node)
     {
         depth++;
@@ -113,7 +104,6 @@ public class PrinterVisitor : IVisitor
         }
         depth--;
     }
-
     public void Visit(Parser.ReadCallNode node)
     {
         depth++;
@@ -127,70 +117,60 @@ public class PrinterVisitor : IVisitor
         }
         depth--;
     }
-
     public void Visit(Parser.NumberExpressionNode node)
     {
         depth++;
         Print(node.LexCur);
         depth--;
     }
-
     public void Visit(Parser.StringNode node)
     {
         depth++;
         Print(node.LexCur);
         depth--;
     }
-
     public void Visit(Parser.BooleanNode node)
     {
         depth++;
         Print(node.LexCur);
         depth--;
     }
-
     public void Visit(Parser.IdNode node)
     {
         depth++;
         Print(node.LexCur);
         depth--;
     }
-
     public void Visit(SymInteger node)
     {
         depth++;
         Print(node.Name);
         depth--;
     }
-
     public void Visit(SymDouble node)
     {
         depth++;
         Print(node.Name);
         depth--;
     }
-
     public void Visit(SymChar node)
     {
         depth++;
         Print(node.Name);
         depth--;
     }
-
     public void Visit(SymString node)
     {
         depth++;
         Print(node.Name);
         depth--;
     }
-
     public void Visit(SymBoolean node)
     {
         depth++;
         Print(node.Name);
         depth--;
     }
-
     public void Visit(Parser.BlockNode node)
     {
         depth++;
@@ -200,7 +180,6 @@ public class PrinterVisitor : IVisitor
         node.Compound.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.ConstDeclsNode node)
     {
         depth++;
@@ -219,7 +198,6 @@ public class PrinterVisitor : IVisitor
         }
         depth--;
     }
-
     public void Visit(Parser.VarDeclsNode node)
     {
         depth++;
@@ -244,6 +222,11 @@ public class PrinterVisitor : IVisitor
         depth--;
     }
 
+    public void Visit(Parser.StatementNode node)
+    {
+        throw new NotImplementedException();
+    }
+
     public void Visit(Parser.TypeDeclsNode node)
     {
         depth++;
@@ -251,7 +234,6 @@ public class PrinterVisitor : IVisitor
         Print(node.TypeDecs);
         depth--;
     }
-
     public void Visit(SymFunction node)
     {
         depth++;
@@ -264,7 +246,6 @@ public class PrinterVisitor : IVisitor
         node.Block.Accept(this);
         depth--;
     }
-
     public void Visit(SymProcedure node)
     {
         depth++;
@@ -286,7 +267,6 @@ public class PrinterVisitor : IVisitor
         node.Original.Accept(this);
        depth--;
     }
-
     public void Visit(Parser.KeywordNode node)
     {
         depth++;
@@ -294,7 +274,6 @@ public class PrinterVisitor : IVisitor
         Print(node.LexCur);
         depth--;
     }
-
     public void Visit(Parser.CompoundStatementNode node)
     {
         depth++;
@@ -302,7 +281,6 @@ public class PrinterVisitor : IVisitor
         Print(node.States);
         depth--;
     }
-
     public void Visit(Parser.FunctionCallStatementNode node)
     {
         depth++;
@@ -313,7 +291,6 @@ public class PrinterVisitor : IVisitor
             depth--;
         depth--;
     }
-
     public void Visit(Parser.AssignmentStatementNode node)
     {
         depth++;
@@ -322,7 +299,6 @@ public class PrinterVisitor : IVisitor
         node.Exp.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.IfStatementNode node)
     {
         depth++;
@@ -342,7 +318,6 @@ public class PrinterVisitor : IVisitor
         }
         depth--;
     }
-
     public void Visit(Parser.WhileStatementNode node)
     {
         depth++;
@@ -351,7 +326,6 @@ public class PrinterVisitor : IVisitor
         node.State.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.ForStatementNode node)
     {
         depth++;
@@ -363,7 +337,6 @@ public class PrinterVisitor : IVisitor
         node.State.Accept(this);
         depth--;
     }
-
     public void Visit(SymType node)
     {
         Print("type");
@@ -371,7 +344,6 @@ public class PrinterVisitor : IVisitor
         Print(node.Name);
         depth--;
     }
-
     public void Visit(SymArray node)
     {
         depth++;
@@ -380,7 +352,6 @@ public class PrinterVisitor : IVisitor
         Print(node.Range);
         depth--;
     }
-
     public void Visit(SymRecord node)
     {
         depth++;
@@ -396,7 +367,6 @@ public class PrinterVisitor : IVisitor
         node.End.Accept(this);
         depth--;
     }
-
     public void Visit(Parser.FieldSelectionNode node)
     {
         depth++;
@@ -405,11 +375,6 @@ public class PrinterVisitor : IVisitor
         Print(node.Ids);
         depth--;
     }
-    public void Visit(Parser.StatementNode node)
-    {
-        throw new NotImplementedException();
-    }
-
     public void Visit(SymConstParam node)
     {
         if (node.Type is null)
@@ -421,7 +386,6 @@ public class PrinterVisitor : IVisitor
             Print("no type");
         }
     }
-
     public void Visit(SymVarParam node)
     {
         if (node.Type is null)
@@ -439,10 +403,6 @@ public class PrinterVisitor : IVisitor
         throw new NotImplementedException();
     }
 
-    public void Visit(SymConst node)
-    {
-        throw new NotImplementedException();
-    }
     public void Visit(SymVar node)
     {
         depth++;
@@ -457,7 +417,6 @@ public class PrinterVisitor : IVisitor
         }
         depth--;
     }
-
     public void Visit(SymTable node)
     {
         foreach (var key in node.Data.Keys)
@@ -467,7 +426,6 @@ public class PrinterVisitor : IVisitor
             valueCasted.Accept(this);
         }
     }
-
     public void Visit(Parser.ParamSelectionNode node)
     {
         depth++;

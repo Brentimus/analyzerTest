@@ -196,10 +196,6 @@ public class SymParam : SymVar
     public SymParam(Parser.IdNode id, SymType symType) : base(id, symType)
     {
     }
-    public override void Accept(IVisitor visitor)
-    {
-        visitor.Visit(this);
-    }
 }
 public class SymProcedure : Sym
 {
