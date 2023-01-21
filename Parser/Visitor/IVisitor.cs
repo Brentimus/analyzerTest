@@ -1,6 +1,6 @@
 using Parser.Sym;
 
-namespace Parser;
+namespace Parser.Visitor;
 
 public interface IVisitor
 {
@@ -40,7 +40,6 @@ public interface IVisitor
     void Visit(Parser.FieldSelectionNode node);
     void Visit(Parser.ConstDeclNode node);
     void Visit(Parser.VarDeclNode node);
-    void Visit(Parser.StatementNode node);
     void Visit(SymConstParam node);
     void Visit(SymVarParam node);
     void Visit(SymParam node);

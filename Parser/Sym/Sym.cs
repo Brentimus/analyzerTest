@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
+using Parser.Visitor;
 
 namespace Parser.Sym;
 
@@ -112,11 +113,11 @@ public class SymAlias : SymType
 public class SymVar : Sym
 {
     public SymType Type { get; }
-
     public SymVar(Parser.IdNode id, SymType type) : base(id.ToString())
     {
         Type = type;
     }
+    
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
@@ -131,13 +132,12 @@ public class SymConst : SymVar
 }
 public class SymVarParam : SymParam
 {
-
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
     }
 
-    public SymVarParam(Parser.IdNode id, SymType symType) : base(id, symType)
+    public SymVarParam(Parser.IdNode id, SymType type) : base(id, type)
     {
     }
 }
@@ -148,7 +148,7 @@ public class SymConstParam : SymParam
         visitor.Visit(this);
     }
 
-    public SymConstParam(Parser.IdNode id, SymType symType) : base(id, symType)
+    public SymConstParam(Parser.IdNode id, SymType type) : base(id, type)
     {
     }
 }
@@ -193,8 +193,12 @@ public class SymArray : SymType
 }
 public class SymParam : SymVar
 {
-    public SymParam(Parser.IdNode id, SymType symType) : base(id, symType)
+    public SymParam(Parser.IdNode id, SymType type) : base(id, type)
     {
+    }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }
 public class SymProcedure : Sym
@@ -257,7 +261,6 @@ public class SymTable : Parser.IAcceptable
         {
             throw new Exception();
         }
-
         Data.Add(name, sym);
     }
 

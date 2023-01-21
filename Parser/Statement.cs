@@ -1,16 +1,12 @@
-using System.Linq.Expressions;
 using Lexer;
+using Parser.Visitor;
 
 namespace Parser;
 
 public partial class Parser
 {
-    public class StatementNode : Node
+    public abstract class StatementNode : Node
     {
-        public override void Accept(IVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
     }
 
     public class CompoundStatementNode : StatementNode
@@ -153,7 +149,7 @@ public partial class Parser
     }
     public CompoundStatementNode CompoundStatement()
     {
-        Eat();
+        Require(LexKeywords.BEGIN);
         var states = new List<StatementNode>();
         while (true)
         {
@@ -225,7 +221,7 @@ public partial class Parser
         var exp = Expression();
         Require(LexKeywords.THEN);
         var stateThen = Statement();
-        StatementNode stateElse = null;
+        StatementNode stateElse = null!;
         if (_curLex.Is(LexKeywords.ELSE))
         {
             Eat();

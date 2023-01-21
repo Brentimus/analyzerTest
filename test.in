@@ -1,2 +1,16 @@
-type i = Integer s = string
-begin end.
+function abc(var a: Integer; const b: Real; c: String): vector;
+begin
+end;
+
+procedure a(var b: Integer; const c: Real; d: String);
+begin
+    writeln(b, c, d);
+end;
+
+procedure hello();
+begin
+    writeln('Hello, world');
+end;
+
+begin
+end.

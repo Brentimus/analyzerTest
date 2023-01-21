@@ -1,5 +1,5 @@
-using System.Data;
 using Lexer;
+using Parser.Visitor;
 
 namespace Parser;
 
@@ -83,22 +83,6 @@ public partial class Parser : Buffer
 
         throw new SyntaxException(_curLex.Pos, $"Expected '{op}' Found '{_curLex.Value}'");
     }
-
-    public void Require(LexType op, bool eat = true)
-    {
-        if (_curLex.Is(op))
-        {
-            if (eat)
-            {
-                Eat();
-            }
-
-            return;
-        }
-
-        throw new SyntaxException(_curLex.Pos, $"Expected '{op}' Found '{_curLex.Value}'");
-    }
-
     public void Require(LexSeparator sep, bool eat = true)
     {
         if (_curLex.Is(sep))
@@ -129,10 +113,9 @@ public partial class Parser : Buffer
         throw new SyntaxException(_curLex.Pos, $"Expected '{keyword}' Found '{_curLex.Value}'");
     }
 
-    public Lex Eat()
+    public void Eat()
     {
         _curLex = _scan.ScannerLex();
-        return _curLex;
     }
 
     public IdNode Id()

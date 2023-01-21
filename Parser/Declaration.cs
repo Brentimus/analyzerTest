@@ -1,6 +1,6 @@
-using System.Reflection.Metadata;
 using Lexer;
 using Parser.Sym;
+using Parser.Visitor;
 
 namespace Parser;
 
@@ -24,42 +24,16 @@ public partial class Parser
             visitor.Visit(this);
         }
     }
-    /*public class ProcDelcNode : DeclarationNode
-    {
-        public ProcDelcNode(SymProcedure procedure)
-        {
-            Procedure = procedure;
-        }
-        public SymProcedure Procedure { get; }
-        public override void Accept(IVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
-        
-    }
-    public class FuncDelcNode : DeclarationNode
-    {
-        public FuncDelcNode(SymFunction function)
-        {
-            Function = function;
-        }
-        public IdNode Id { get; }
-        public List<Parameter>
-        public override void Accept(IVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
-    }*/
     public class VarDeclNode : DeclarationNode
     {
         public VarDeclNode(List<IdNode> names, List<SymVarParam> symVarParams, ExpressionNode? exp)
         {
-            this.names = names;
+            Names = names;
             SymVarParams = symVarParams;
             Exp = exp;
         }
 
-        public List<IdNode> names { get; }
+        private List<IdNode> Names { get; }
         public List<SymVarParam> SymVarParams { get; }
         public ExpressionNode? Exp { get; }
         public override void Accept(IVisitor visitor)
@@ -69,11 +43,11 @@ public partial class Parser
     }
     public class VarDeclsNode : DeclarationNode
     {
-        public List<VarDeclNode> Dels { get; }
+        public List<VarDeclNode> Decls { get; }
 
-        public VarDeclsNode(List<VarDeclNode> dels)
+        public VarDeclsNode(List<VarDeclNode> decls)
         {
-            Dels = dels;
+            Decls = decls;
         }
         public override void Accept(IVisitor visitor)
         {
@@ -109,12 +83,12 @@ public partial class Parser
     }
     public class TypeDeclsNode : DeclarationNode
     {
-        public TypeDeclsNode(List<SymAlias> typeDecs)
+        public TypeDeclsNode(List<SymAlias> typeDecls)
         {
-            TypeDecs = typeDecs;
+            TypeDecls = typeDecls;
         }
 
-        public List<SymAlias> TypeDecs { get; }
+        public List<SymAlias> TypeDecls { get; }
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -138,7 +112,8 @@ public partial class Parser
         }
         
     }
-    public ParamSelectionNode Parameter()
+
+    private ParamSelectionNode Parameter()
     {
         KeywordNode modifier = null!;
         if (_curLex.Is(LexKeywords.VAR, LexKeywords.CONST))
@@ -149,7 +124,8 @@ public partial class Parser
         Require(LexSeparator.Colon);
         return new ParamSelectionNode(modifier, idList, Type());
     }
-    public SymFunction FuncDecl()
+
+    private SymFunction FuncDecl()
     {
         Eat();
         IdNode id = Id();
@@ -176,12 +152,19 @@ public partial class Parser
         {
             foreach (var idNode in local.Ids)
             {
-                table.Push(new SymVar(idNode, local.Type), true);
+                if (local.Modifier is null)
+                    table.Push(new SymParam(idNode, local.Type), true);
+                else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
+                    table.Push(new SymConstParam(idNode, local.Type), true);
+                else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
+                    table.Push(new SymVarParam(idNode, local.Type), true);
+                    
             }
         }
         return new SymFunction(id, table, new BlockNode(decls, compound), type);
     }
-    public SymProcedure ProcDecl()
+
+    private SymProcedure ProcDecl()
     {
         Eat();
         IdNode id = Id();
@@ -206,14 +189,20 @@ public partial class Parser
         {
             foreach (var idNode in local.Ids)
             {
-                table.Push(new SymVar(idNode, local.Type), true);
+                if (local.Modifier is null)
+                    table.Push(new SymParam(idNode, local.Type), true);
+                else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
+                    table.Push(new SymConstParam(idNode, local.Type), true);
+                else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
+                    table.Push(new SymVarParam(idNode, local.Type), true);
+                    
             }
         }
 
         return new SymProcedure(id, table, new BlockNode(decls, compound));
     }
 
-    public List<IAcceptable> CallBlock()
+    private List<IAcceptable> CallBlock()
     {
         var declarations = new List<IAcceptable>();
         while (true)
@@ -236,7 +225,8 @@ public partial class Parser
         }
         return declarations;
     }
-    public BlockNode Block()
+
+    private BlockNode Block()
     {
         var declarations = new List<IAcceptable>();
         while (true)
@@ -269,11 +259,11 @@ public partial class Parser
         var compound = CompoundStatement();
         return new BlockNode(declarations, compound);
     }
-    public ConstDeclsNode ConstDecls()
+
+    private ConstDeclsNode ConstDecls()
     {
         Eat();
-        var decls = new List<ConstDeclNode>();
-        decls.Add(ConstDecl());
+        var decls = new List<ConstDeclNode> {ConstDecl()};
         while (_curLex.Is(LexType.Identifier))
         {
             decls.Add(ConstDecl());
@@ -281,10 +271,11 @@ public partial class Parser
 
         return new ConstDeclsNode(decls);
     }
-    public ConstDeclNode ConstDecl()
+
+    private ConstDeclNode ConstDecl()
     {
         var id = Id();
-        SymType type = null;
+        SymType type = null!;
         if (_curLex.Is(LexSeparator.Colon))
         {
             Eat();
@@ -293,14 +284,10 @@ public partial class Parser
         Require(LexOperator.Equal);
         var exp = Expression();
         Require(LexSeparator.Semicolom);
-        if (type == null)
-        {
-            return new ConstDeclNode(new SymConst(id, null), exp);
-        }
-
         return new ConstDeclNode(new SymConst(id, type), exp);
     }
-    public SymAlias TypeDecl()
+
+    private SymAlias TypeDecl()
     {
         var id = Id();
         Require(LexOperator.Equal);
@@ -308,11 +295,11 @@ public partial class Parser
         Require(LexSeparator.Semicolom);
         return new SymAlias(id, type);
     }
-    public TypeDeclsNode TypeDecls()
+
+    private TypeDeclsNode TypeDecls()
     {
         Eat();
-        var decls = new List<SymAlias>();
-        decls.Add(TypeDecl());
+        var decls = new List<SymAlias> {TypeDecl()};
         while (_curLex.Is(LexType.Identifier))
         {
             decls.Add(TypeDecl());
@@ -320,22 +307,22 @@ public partial class Parser
 
         return new TypeDeclsNode(decls);
     }
-    public VarDeclsNode VarDecls()
+
+    private VarDeclsNode VarDecls()
     {
         Eat();
-        var dels = new List<VarDeclNode>();
-        dels.Add(VarDecl());
+        var decls = new List<VarDeclNode> {VarDecl()};
         while (_curLex.Is(LexType.Identifier))
         {
-            dels.Add(VarDecl());
+            decls.Add(VarDecl());
         }
 
-        return new VarDeclsNode(dels);
+        return new VarDeclsNode(decls);
     }
-    public VarDeclNode VarDecl()
+
+    private VarDeclNode VarDecl()
     {
         var names = new List<IdNode>();
-        var ids = new List<IdNode>();
         var symVarParam = new List<SymVarParam>();
         names.Add(Id());
         while (_curLex.Is(LexSeparator.Comma))
@@ -353,7 +340,7 @@ public partial class Parser
         ExpressionNode? exp = null;
         if (_curLex.Is(LexOperator.Equal))
         {
-            if (ids.Count > 1)
+            if (names.Count > 1)
             {
                 throw new SyntaxException(_curLex.Pos, "Error initialization");
             }

@@ -1,5 +1,5 @@
 using Lexer;
-using Parser.Sym;
+using Parser.Visitor;
 
 namespace Parser;
 
@@ -144,7 +144,7 @@ public partial class Parser
         
         public override string ToString()
         {
-            return LexCur.Value.ToString().ToLower();
+            return LexCur.Value.ToString()!.ToLower();
         }
     }
     public class BooleanNode : ExpressionNode
@@ -174,7 +174,7 @@ public partial class Parser
         }
         public override string ToString()
         {
-            return LexCur.Value.ToString().ToLower();
+            return LexCur.Value.ToString()!.ToLower();
         }
     }
     public class NumberExpressionNode : ExpressionNode
@@ -186,7 +186,7 @@ public partial class Parser
 
         public override string ToString()
         {
-            return LexCur.Value.ToString().ToLower();
+            return LexCur.Value.ToString()!.ToLower();
         }
 
         public override void Accept(IVisitor visitor)
@@ -196,7 +196,8 @@ public partial class Parser
 
         public Lex LexCur { get; set; }
     }
-    public CallNode Stream()
+
+    private CallNode Stream()
     {
         var lex = _curLex;
         Eat();
@@ -212,7 +213,8 @@ public partial class Parser
         return new ReadCallNode(new IdNode(lex), args, lex.Is(LexKeywords.READLN));
 
     }
-    public ExpressionNode Expression()
+
+    private ExpressionNode Expression()
     {
         var left = SimpleExpression();
         var lex = _curLex;
@@ -295,7 +297,8 @@ public partial class Parser
         
         throw new SyntaxException(lex.Pos, "factor expected");
     }
-    public VarRefNode VarRef()
+
+    private VarRefNode VarRef()
     {
         var left = Id() as VarRefNode;
         var lex = _curLex;

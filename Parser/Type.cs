@@ -1,5 +1,6 @@
 using Lexer;
 using Parser.Sym;
+using Parser.Visitor;
 
 namespace Parser;
 
@@ -90,7 +91,6 @@ public partial class Parser
 
     public SymRecord RecordType()
     {
-        Eat();
         var fieldList = new List<List<FieldSelectionNode>>();
         while (!_curLex.Is(LexKeywords.END))
         {
