@@ -47,4 +47,5 @@ public interface IVisitor
     void Visit(SymTable node);
     void Visit(Parser.ParamSelectionNode node);
     void Visit(Parser.RelOpExpressionNode node);
+    void Visit(Parser.CharNode node);
 }

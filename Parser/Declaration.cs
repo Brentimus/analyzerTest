@@ -9,6 +9,7 @@ public partial class Parser
     public abstract class DeclarationNode : Node
     {
     }
+
     public class BlockNode : Node
     {
         public BlockNode(List<IAcceptable> declarations, CompoundStatementNode compound)
@@ -19,11 +20,13 @@ public partial class Parser
 
         public List<IAcceptable> Declarations { get; }
         public CompoundStatementNode Compound { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class VarDeclNode : DeclarationNode
     {
         public VarDeclNode(List<IdNode> names, List<SymVarParam> symVarParams, ExpressionNode? exp)
@@ -33,14 +36,16 @@ public partial class Parser
             Exp = exp;
         }
 
-        private List<IdNode> Names { get; }
+        public List<IdNode> Names { get; }
         public List<SymVarParam> SymVarParams { get; }
         public ExpressionNode? Exp { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class VarDeclsNode : DeclarationNode
     {
         public List<VarDeclNode> Decls { get; }
@@ -49,24 +54,28 @@ public partial class Parser
         {
             Decls = decls;
         }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class ConstDeclsNode : DeclarationNode
     {
         public ConstDeclsNode(List<ConstDeclNode> decls)
         {
             Decls = decls;
         }
+
         public List<ConstDeclNode> Decls { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
-        
     }
+
     public class ConstDeclNode : DeclarationNode
     {
         public ConstDeclNode(SymConst symConst, ExpressionNode exp)
@@ -74,13 +83,16 @@ public partial class Parser
             SymConst = symConst;
             Exp = exp;
         }
+
         public SymConst SymConst { get; }
         public ExpressionNode Exp { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class TypeDeclsNode : DeclarationNode
     {
         public TypeDeclsNode(List<SymAlias> typeDecls)
@@ -89,11 +101,13 @@ public partial class Parser
         }
 
         public List<SymAlias> TypeDecls { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class ParamSelectionNode : DeclarationNode
     {
         public ParamSelectionNode(KeywordNode modifier, List<IdNode> ids, SymType type)
@@ -106,20 +120,17 @@ public partial class Parser
         public KeywordNode Modifier { get; }
         public List<IdNode> Ids { get; }
         public SymType Type { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
-        
     }
 
     private ParamSelectionNode Parameter()
     {
         KeywordNode modifier = null!;
-        if (_curLex.Is(LexKeywords.VAR, LexKeywords.CONST))
-        {
-            modifier = Keyword();
-        }
+        if (_curLex.Is(LexKeywords.VAR, LexKeywords.CONST)) modifier = Keyword();
         var idList = IdList();
         Require(LexSeparator.Colon);
         return new ParamSelectionNode(modifier, idList, Type());
@@ -128,7 +139,7 @@ public partial class Parser
     private SymFunction FuncDecl()
     {
         Eat();
-        IdNode id = Id();
+        var id = Id();
         Require(LexSeparator.Lparen);
         var locals = new List<ParamSelectionNode>();
         if (!_curLex.Is(LexSeparator.Rparen))
@@ -140,6 +151,7 @@ public partial class Parser
                 locals.Add(Parameter());
             }
         }
+
         Require(LexSeparator.Rparen);
         Require(LexSeparator.Colon);
         var type = Type();
@@ -149,25 +161,20 @@ public partial class Parser
         Require(LexSeparator.Semicolom);
         var table = new SymTable();
         foreach (var local in locals)
-        {
-            foreach (var idNode in local.Ids)
-            {
-                if (local.Modifier is null)
-                    table.Push(new SymParam(idNode, local.Type), true);
-                else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
-                    table.Push(new SymConstParam(idNode, local.Type), true);
-                else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
-                    table.Push(new SymVarParam(idNode, local.Type), true);
-                    
-            }
-        }
+        foreach (var idNode in local.Ids)
+            if (local.Modifier is null)
+                table.Push(new SymParam(idNode, local.Type), true);
+            else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
+                table.Push(new SymConstParam(idNode, local.Type), true);
+            else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
+                table.Push(new SymVarParam(idNode, local.Type), true);
         return new SymFunction(id, table, new BlockNode(decls, compound), type);
     }
 
     private SymProcedure ProcDecl()
     {
         Eat();
-        IdNode id = Id();
+        var id = Id();
         Require(LexSeparator.Lparen);
         var locals = new List<ParamSelectionNode>();
         if (!_curLex.Is(LexSeparator.Rparen))
@@ -179,6 +186,7 @@ public partial class Parser
                 locals.Add(Parameter());
             }
         }
+
         Require(LexSeparator.Rparen);
         Require(LexSeparator.Semicolom);
         var decls = CallBlock();
@@ -186,18 +194,13 @@ public partial class Parser
         Require(LexSeparator.Semicolom);
         var table = new SymTable();
         foreach (var local in locals)
-        {
-            foreach (var idNode in local.Ids)
-            {
-                if (local.Modifier is null)
-                    table.Push(new SymParam(idNode, local.Type), true);
-                else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
-                    table.Push(new SymConstParam(idNode, local.Type), true);
-                else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
-                    table.Push(new SymVarParam(idNode, local.Type), true);
-                    
-            }
-        }
+        foreach (var idNode in local.Ids)
+            if (local.Modifier is null)
+                table.Push(new SymParam(idNode, local.Type), true);
+            else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
+                table.Push(new SymConstParam(idNode, local.Type), true);
+            else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
+                table.Push(new SymVarParam(idNode, local.Type), true);
 
         return new SymProcedure(id, table, new BlockNode(decls, compound));
     }
@@ -206,23 +209,14 @@ public partial class Parser
     {
         var declarations = new List<IAcceptable>();
         while (true)
-        {
             if (_curLex.Is(LexKeywords.VAR))
-            {
                 declarations.Add(VarDecls());
-            }
             else if (_curLex.Is(LexKeywords.TYPE))
-            {
                 declarations.Add(TypeDecls());
-            }
             else if (_curLex.Is(LexKeywords.CONST))
-            {
                 declarations.Add(ConstDecls());
-            }else
-            {
+            else
                 break;
-            }
-        }
         return declarations;
     }
 
@@ -230,32 +224,18 @@ public partial class Parser
     {
         var declarations = new List<IAcceptable>();
         while (true)
-        {
             if (_curLex.Is(LexKeywords.VAR))
-            {
                 declarations.Add(VarDecls());
-            }
             else if (_curLex.Is(LexKeywords.TYPE))
-            {
                 declarations.Add(TypeDecls());
-            }
             else if (_curLex.Is(LexKeywords.CONST))
-            {
                 declarations.Add(ConstDecls());
-            }
             else if (_curLex.Is(LexKeywords.PROCEDURE))
-            {
                 declarations.Add(ProcDecl());
-            }
             else if (_curLex.Is(LexKeywords.FUNCTION))
-            {
                 declarations.Add(FuncDecl());
-            }
             else
-            {
                 break;
-            }
-        }
         var compound = CompoundStatement();
         return new BlockNode(declarations, compound);
     }
@@ -264,10 +244,7 @@ public partial class Parser
     {
         Eat();
         var decls = new List<ConstDeclNode> {ConstDecl()};
-        while (_curLex.Is(LexType.Identifier))
-        {
-            decls.Add(ConstDecl());
-        }
+        while (_curLex.Is(LexType.Identifier)) decls.Add(ConstDecl());
 
         return new ConstDeclsNode(decls);
     }
@@ -281,6 +258,7 @@ public partial class Parser
             Eat();
             type = Type();
         }
+
         Require(LexOperator.Equal);
         var exp = Expression();
         Require(LexSeparator.Semicolom);
@@ -300,10 +278,7 @@ public partial class Parser
     {
         Eat();
         var decls = new List<SymAlias> {TypeDecl()};
-        while (_curLex.Is(LexType.Identifier))
-        {
-            decls.Add(TypeDecl());
-        }
+        while (_curLex.Is(LexType.Identifier)) decls.Add(TypeDecl());
 
         return new TypeDeclsNode(decls);
     }
@@ -312,10 +287,7 @@ public partial class Parser
     {
         Eat();
         var decls = new List<VarDeclNode> {VarDecl()};
-        while (_curLex.Is(LexType.Identifier))
-        {
-            decls.Add(VarDecl());
-        }
+        while (_curLex.Is(LexType.Identifier)) decls.Add(VarDecl());
 
         return new VarDeclsNode(decls);
     }
@@ -330,20 +302,15 @@ public partial class Parser
             Eat();
             names.Add(Id());
         }
+
         Require(LexSeparator.Colon);
         var type = Type();
-        foreach (var i in names)
-        {
-            symVarParam.Add(new SymVarParam(i, type));
-        }
-        
+        foreach (var i in names) symVarParam.Add(new SymVarParam(i, type));
+
         ExpressionNode? exp = null;
         if (_curLex.Is(LexOperator.Equal))
         {
-            if (names.Count > 1)
-            {
-                throw new SyntaxException(_curLex.Pos, "Error initialization");
-            }
+            if (names.Count > 1) throw new SyntaxException(_curLex.Pos, "Error initialization");
             Eat();
             exp = Expression();
         }

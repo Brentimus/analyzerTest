@@ -30,16 +30,7 @@ public class PrinterVisitor : IVisitor
     public void Visit(Parser.ProgramNode node)
     {
         Print("program");
-        if (node.Name is not null)
-        {
-            node.Name.Accept(this);
-        }
-        else
-        {
-            _depth++;
-            Print("no name");
-            _depth--;
-        }
+        node.Name?.Accept(this);
         node.Block.Accept(this);
     }
     public void Visit(Parser.BinOpExpressionNode node)
@@ -58,6 +49,12 @@ public class PrinterVisitor : IVisitor
         node.Right.Accept(this);
         _depth--;
     }
+
+    public void Visit(Parser.CharNode node)
+    {
+        Print(node.LexCur);
+    }
+
     public void Visit(Parser.UnOpExpressionNode node)
     {
         _depth++;
@@ -97,9 +94,7 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(Parser.StringNode node)
     {
-        _depth++;
         Print(node.LexCur);
-        _depth--;
     }
     public void Visit(Parser.BooleanNode node)
     {
@@ -171,20 +166,26 @@ public class PrinterVisitor : IVisitor
         {
             node.Exp.Accept(this);
         }
+        else
+        {
+            Print("no expression");
+        }
         _depth--;
     }
     public void Visit(Parser.VarDeclsNode node)
     {
         _depth++;
-        Print("var");
+        Print("vars");
         Print(node.Decls);
         _depth--;
     }
     public void Visit(Parser.VarDeclNode node)
     {
         _depth++;
-        Print("var decl");
-        Print(node.SymVarParams);
+        Print("var");
+        Print(node.Names);
+        _depth++;
+        node.SymVarParams[0].Type.Accept(this);
         if (node.Exp is not null)
         {
             node.Exp.Accept(this);
@@ -194,11 +195,12 @@ public class PrinterVisitor : IVisitor
             Print("no expression");
         }
         _depth--;
+        _depth--;
     }
     public void Visit(Parser.TypeDeclsNode node)
     {
         _depth++;
-        Print("def types");
+        Print("decls types");
         Print(node.TypeDecls);
         _depth--;
     }
@@ -228,11 +230,11 @@ public class PrinterVisitor : IVisitor
     public void Visit(SymAlias node)
     {
         _depth++;
-        Print("def type");
-            _depth++;
-            Print(node.Name);
-            _depth--;
+        Print("decl type");
+        _depth++;
+        Print(node.Name);
         node.Original.Accept(this);
+       _depth--;
        _depth--;
     }
     public void Visit(Parser.KeywordNode node)
@@ -329,13 +331,11 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(Parser.TypeRangeNode node)
     {
-        _depth++;
         Print("range");
         _depth++;
         Print("..");
         node.Begin.Accept(this);
         node.End.Accept(this);
-        _depth--;
         _depth--;
     }
     public void Visit(Parser.FieldSelectionNode node)

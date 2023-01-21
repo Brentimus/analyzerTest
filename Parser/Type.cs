@@ -9,20 +9,11 @@ public partial class Parser
     public SymType Type()
     {
         var lex = _curLex;
-        if (lex.Is(LexType.Identifier) || lex.Is(LexKeywords.STRING))
-        {
-            return PrimitiveType();
-        }
-        if (lex.Is(LexKeywords.ARRAY))
-        {
-            return ArrayType();
-        }
+        if (lex.Is(LexType.Identifier) || lex.Is(LexKeywords.STRING)) return PrimitiveType();
+        if (lex.Is(LexKeywords.ARRAY)) return ArrayType();
 
-        if (lex.Is(LexKeywords.RECORD))
-        {
-            return RecordType();
-        }
-        throw new SyntaxException( _curLex.Pos, "type expected");
+        if (lex.Is(LexKeywords.RECORD)) return RecordType();
+        throw new SyntaxException(_curLex.Pos, "type expected");
     }
 
     public SymType PrimitiveType()
@@ -33,6 +24,7 @@ public partial class Parser
             Eat();
             return new SymType(lex.Value.ToString()!.ToLower());
         }
+
         return new SymType(Id().ToString());
     }
 
@@ -49,14 +41,10 @@ public partial class Parser
 
     public List<TypeRangeNode> TypeRanges()
     {
-        var ranges = new List<TypeRangeNode>();
-        ranges.Add(TypeRange());
+        var ranges = new List<TypeRangeNode> {TypeRange()};
         while (true)
         {
-            if (!_curLex.Is(LexSeparator.Comma))
-            {
-                break;
-            }
+            if (!_curLex.Is(LexSeparator.Comma)) break;
 
             Eat();
             ranges.Add(TypeRange());
@@ -83,6 +71,7 @@ public partial class Parser
 
         public ExpressionNode Begin { get; }
         public ExpressionNode End { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -92,29 +81,19 @@ public partial class Parser
     public SymRecord RecordType()
     {
         var fieldList = new List<List<FieldSelectionNode>>();
-        while (!_curLex.Is(LexKeywords.END))
-        {
-            fieldList.Add(FieldList());
-        }
+        while (!_curLex.Is(LexKeywords.END)) fieldList.Add(FieldList());
         Require(LexKeywords.END);
         var table = new SymTable();
         foreach (var filds in fieldList)
-        {
-            foreach (var field in filds)
-            {
-                foreach (var idNode in field.Ids)
-                {
-                    table.Push(new SymVar(idNode, field.Type), true);
-                }
-            }
-        }
+        foreach (var field in filds)
+        foreach (var idNode in field.Ids)
+            table.Push(new SymVar(idNode, field.Type), true);
         return new SymRecord(table);
     }
 
     public List<FieldSelectionNode> FieldList()
     {
-        var fields = new List<FieldSelectionNode>();
-        fields.Add(FieldSelection());
+        var fields = new List<FieldSelectionNode> {FieldSelection()};
         while (true)
         {
             if (_curLex.Is(LexSeparator.Semicolom))
@@ -122,12 +101,14 @@ public partial class Parser
                 Eat();
                 break;
             }
+
             Eat();
             fields.Add(FieldSelection());
         }
 
         return fields;
     }
+
     public FieldSelectionNode FieldSelection()
     {
         var ids = IdList();
@@ -146,6 +127,7 @@ public partial class Parser
 
         public List<IdNode> Ids { get; }
         public SymType Type { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);

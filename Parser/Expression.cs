@@ -1,4 +1,5 @@
 using Lexer;
+using Parser.Sym;
 using Parser.Visitor;
 
 namespace Parser;
@@ -8,9 +9,11 @@ public partial class Parser
     public abstract class ExpressionNode : Node
     {
     }
+
     public abstract class VarRefNode : ExpressionNode
     {
     }
+
     public class UnOpExpressionNode : ExpressionNode
     {
         public UnOpExpressionNode(Lex op, ExpressionNode node)
@@ -28,6 +31,7 @@ public partial class Parser
             visitor.Visit(this);
         }
     }
+
     public class BinOpExpressionNode : ExpressionNode
     {
         public BinOpExpressionNode(Lex op, Node left, Node right)
@@ -37,7 +41,7 @@ public partial class Parser
             Right = right;
         }
 
-        public Lex Op { get; set; }
+        public Lex Op { get;}
 
         public Node Right { get; }
         public Node Left { get; }
@@ -47,6 +51,7 @@ public partial class Parser
             visitor.Visit(this);
         }
     }
+
     public class RelOpExpressionNode : ExpressionNode
     {
         public RelOpExpressionNode(Lex op, Node left, Node right)
@@ -56,7 +61,7 @@ public partial class Parser
             Right = right;
         }
 
-        public Lex Op { get; set; }
+        public Lex Op { get; }
 
         public Node Right { get; }
         public Node Left { get; }
@@ -66,21 +71,24 @@ public partial class Parser
             visitor.Visit(this);
         }
     }
-    
+
     public class WriteCallNode : CallNode
     {
         public WriteCallNode(IdNode name, List<ExpressionNode> args, bool newLine) : base(name, args)
         {
             NewLine = newLine;
         }
+
         public bool NewLine { get; }
     }
+
     public class ReadCallNode : CallNode
     {
         public ReadCallNode(IdNode name, List<ExpressionNode> args, bool newLine) : base(name, args)
         {
             NewLine = newLine;
         }
+
         public bool NewLine { get; }
     }
 
@@ -92,13 +100,15 @@ public partial class Parser
             ArrayExp = arrayExp;
         }
 
-        public VarRefNode ArrayId { get; set;}
-        public ExpressionNode ArrayExp { get; set;}
+        public VarRefNode ArrayId { get; }
+        public ExpressionNode ArrayExp { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class RecordAccess : VarRefNode
     {
         public RecordAccess(VarRefNode recordId, IdNode field)
@@ -106,15 +116,16 @@ public partial class Parser
             RecordId = recordId;
             Field = field;
         }
-        public VarRefNode RecordId { get; set; }
-        public IdNode Field { get; set; }
-        
+
+        public VarRefNode RecordId { get; }
+        public IdNode Field { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
-
     }
+
     public class CallNode : VarRefNode
     {
         public CallNode(VarRefNode name, List<ExpressionNode> args)
@@ -122,13 +133,16 @@ public partial class Parser
             Name = name;
             Args = args;
         }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
+
         public List<ExpressionNode> Args { get; }
         public VarRefNode Name { get; }
     }
+
     public class IdNode : VarRefNode
     {
         public IdNode(Lex lexCur)
@@ -136,17 +150,19 @@ public partial class Parser
             LexCur = lexCur;
         }
 
-        public Lex LexCur { get; set; }
+        public Lex LexCur { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
-        
+
         public override string ToString()
         {
             return LexCur.Value.ToString()!.ToLower();
         }
     }
+
     public class BooleanNode : ExpressionNode
     {
         public BooleanNode(Lex lexCur)
@@ -155,23 +171,47 @@ public partial class Parser
         }
 
         public Lex LexCur { get; }
-        
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
+
     public class StringNode : ExpressionNode
     {
         public StringNode(Lex lexeme)
         {
             LexCur = lexeme;
         }
-        public Lex LexCur { get; set; }
+
+        public Lex LexCur { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
+
+        public override string ToString()
+        {
+            return LexCur.Value.ToString()!.ToLower();
+        }
+    }
+
+    public class CharNode : ExpressionNode
+    {
+        public CharNode(Lex lexeme)
+        {
+            LexCur = lexeme;
+        }
+
+        public Lex LexCur { get; }
+
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
         public override string ToString()
         {
             return LexCur.Value.ToString()!.ToLower();
@@ -194,7 +234,7 @@ public partial class Parser
             visitor.Visit(this);
         }
 
-        public Lex LexCur { get; set; }
+        public Lex LexCur { get; }
     }
 
     private CallNode Stream()
@@ -208,10 +248,10 @@ public partial class Parser
             args = ExpressionList();
             Require(LexSeparator.Rparen);
         }
+
         if (lex.Is(LexKeywords.WRITE, LexKeywords.WRITELN))
             return new WriteCallNode(new IdNode(lex), args, lex.Is(LexKeywords.WRITELN));
         return new ReadCallNode(new IdNode(lex), args, lex.Is(LexKeywords.READLN));
-
     }
 
     private ExpressionNode Expression()
@@ -219,13 +259,15 @@ public partial class Parser
         var left = SimpleExpression();
         var lex = _curLex;
         if (lex.Is(LexOperator.Equal, LexOperator.Less, LexOperator.More, LexOperator.NoEqual, LexOperator.LessEqual,
-                   LexOperator.MoreEqual) || lex.Is(LexKeywords.OR, LexKeywords.IN))
+                LexOperator.MoreEqual))
         {
             Eat();
             left = new RelOpExpressionNode(lex, left, SimpleExpression());
         }
+
         return left;
     }
+
     private ExpressionNode SimpleExpression()
     {
         var left = Term();
@@ -239,6 +281,7 @@ public partial class Parser
 
         return left;
     }
+
     private ExpressionNode Term()
     {
         var left = SimpleTerm();
@@ -253,6 +296,7 @@ public partial class Parser
 
         return left;
     }
+
     private ExpressionNode SimpleTerm()
     {
         if (!_curLex.Is(LexOperator.Add, LexOperator.Sub) && !_curLex.Is(LexKeywords.NOT)) return Factor();
@@ -260,6 +304,7 @@ public partial class Parser
         Eat();
         return new UnOpExpressionNode(op, SimpleTerm());
     }
+
     private ExpressionNode Factor()
     {
         var lex = _curLex;
@@ -269,24 +314,23 @@ public partial class Parser
             Eat();
             return new StringNode(lex);
         }
+
+        if (lex.Is(LexType.Char))
+        {
+            Eat();
+            return new CharNode(lex);
+        }
         if (lex.Is(LexType.Integer) || lex.Is(LexType.Double))
         {
             Eat();
             return new NumberExpressionNode(lex);
         }
+
         if (lex.Is(LexType.Keyword))
-        {
             if (lex.Is(LexKeywords.TRUE, LexKeywords.FALSE))
                 return new BooleanNode(lex);
-        }
-        if (lex.Is(LexType.Identifier))
-        {
-            return VarRef();
-        }
-        if (lex.Is(LexKeywords.WRITE, LexKeywords.READ, LexKeywords.WRITELN, LexKeywords.READLN))
-        {
-            return Stream();
-        }
+        if (lex.Is(LexType.Identifier)) return VarRef();
+        if (lex.Is(LexKeywords.WRITE, LexKeywords.READ, LexKeywords.WRITELN, LexKeywords.READLN)) return Stream();
         if (lex.Is(LexSeparator.Lparen))
         {
             Eat();
@@ -294,7 +338,7 @@ public partial class Parser
             Require(LexSeparator.Rparen);
             return e;
         }
-        
+
         throw new SyntaxException(lex.Pos, "factor expected");
     }
 
@@ -303,22 +347,15 @@ public partial class Parser
         var left = Id() as VarRefNode;
         var lex = _curLex;
         while (true)
-        {
             if (lex.Is(LexSeparator.Lbrack))
             {
                 //ArrayAccess
                 Eat();
                 var args = new List<ExpressionNode>();
-                if (!lex.Is(LexSeparator.Rbrack))
-                {
-                    args = ExpressionList();
-                }
+                if (!lex.Is(LexSeparator.Rbrack)) args = ExpressionList();
 
-                foreach (var index in args)
-                {
-                    left = new ArrayAccess(left, index);
-                }
-                
+                foreach (var index in args) left = new ArrayAccess(left, index);
+
                 Require(LexSeparator.Rbrack);
                 lex = _curLex;
             }
@@ -335,10 +372,7 @@ public partial class Parser
                 Eat();
                 var args = new List<ExpressionNode>();
 
-                if (!_curLex.Is(LexSeparator.Rparen))
-                {
-                    args = ExpressionList();
-                }
+                if (!_curLex.Is(LexSeparator.Rparen)) args = ExpressionList();
 
                 left = new CallNode(left, args);
 
@@ -346,8 +380,11 @@ public partial class Parser
 
                 lex = _curLex;
             }
-            else break;
-        }
+            else
+            {
+                break;
+            }
+
         return left;
     }
 }

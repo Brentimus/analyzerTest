@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using SimpleParser = SimpleParser.SimpleParser;
 
 internal class program
 {

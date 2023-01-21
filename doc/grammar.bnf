@@ -1,9 +1,9 @@
 // bnf rules:
-// A, B  - concat
-// A | B - A or B
-// [A]   - zero or one entire
-// {A}   - zero or more entries
-// (A B) - group
+# 1.     [X]    -- zero or one entry of X
+# 2.     {X}    -- zero and more entries of X
+# 3.    (X|Y)   -- group: or X, or Y
+# 4.    (X Y)   -- group: X Y
+# 5.    "XYZ"   -- terminal sign XYZ
 
 // program
 <program> ::= ["program" <id> ";"] {<declarations>} <compound_statement>
@@ -47,8 +47,8 @@
 <expression> ::= <simple_expression> {("=" | "<" | "<>" | "<=" | ">" | ">=") <simple_expression>}
 <simple_expression> ::= <term> {("+" | "-" | "or" | "xor") <term>}
 <term> ::= <simple_term> {("*" | "/" | "div" | "mod" | "and" | "shr" | "shl") <simple_term>}
-<simple_term> ::= {"+" | "-" | "not"} <factor>
-<factor> ::= "(" <expression> ")" | <string> | <number> | <var_ref>
+<simple_term> ::= {"+" | "-" | "not" | "or"} <factor>
+<factor> ::= "(" <expression> ")" | <string> | <number> | <boolean> | <var_ref>
 <var_ref> ::= <id> { <array_access> | <record_access> | <function_call> }
 <array_access> ::= "[" <expression_list> "]"
 <record_access> ::= "." <id>

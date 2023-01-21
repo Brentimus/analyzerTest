@@ -1,0 +1,3 @@
+procedure (var a: Double; const b: Integer; c: String);
+begin
+end.

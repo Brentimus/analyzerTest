@@ -17,6 +17,7 @@ public partial class Parser
         }
 
         public List<StatementNode> States { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -35,6 +36,7 @@ public partial class Parser
         public ExpressionNode Exp { get; set; }
         public StatementNode StateThen { get; set; }
         public StatementNode StateElse { get; set; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -58,6 +60,7 @@ public partial class Parser
         public ExpressionNode ExpTo { get; }
         public KeywordNode To { get; }
         public StatementNode State { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -74,6 +77,7 @@ public partial class Parser
 
         public ExpressionNode Exp { get; }
         public StatementNode State { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -92,6 +96,7 @@ public partial class Parser
         public ExpressionNode VarRef { get; }
         public Lex Op { get; }
         public ExpressionNode Exp { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -105,8 +110,10 @@ public partial class Parser
             Name = node.Name;
             Args = node.Args;
         }
+
         public VarRefNode Name { get; }
         public List<ExpressionNode> Args { get; }
+
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -122,15 +129,11 @@ public partial class Parser
     public StatementNode SimpleStatement()
     {
         var left = Expression();
-        if (left is CallNode callNode)
-        {
-            return new FunctionCallStatementNode(callNode);
-            
-        }
+        if (left is CallNode callNode) return new FunctionCallStatementNode(callNode);
         if (left is VarRefNode)
         {
             Lex op;
-            if (_curLex.Is(LexOperator.AssignSub, LexOperator.Assign, 
+            if (_curLex.Is(LexOperator.AssignSub, LexOperator.Assign,
                     LexOperator.AssignAdd, LexOperator.AssignDiv, LexOperator.AssignMul))
             {
                 op = _curLex;
@@ -147,13 +150,14 @@ public partial class Parser
 
         throw new SyntaxException(_curLex.Pos, "Illegal statement");
     }
+
     public CompoundStatementNode CompoundStatement()
     {
         Require(LexKeywords.BEGIN);
         var states = new List<StatementNode>();
         while (true)
         {
-            int checker = 0;
+            var checker = 0;
             while (_curLex.Is(LexSeparator.Semicolom))
             {
                 checker++;
@@ -170,30 +174,19 @@ public partial class Parser
                 Require(LexSeparator.Semicolom);
             states.Add(Statement());
         }
+
         return new CompoundStatementNode(states);
     }
+
     public StatementNode? StructuredStatement()
     {
-        if (_curLex.Is(LexKeywords.BEGIN))
-        {
-            return CompoundStatement();
-        }
-        if (_curLex.Is(LexKeywords.WHILE))
-        {
-            return WhileStatement();
-        }
-
-        if (_curLex.Is(LexKeywords.FOR))
-        {
-            return ForStatement();
-        }
-
-        if (_curLex.Is(LexKeywords.IF))
-        {
-            return IfStatement();
-        }
+        if (_curLex.Is(LexKeywords.BEGIN)) return CompoundStatement();
+        if (_curLex.Is(LexKeywords.WHILE)) return WhileStatement();
+        if (_curLex.Is(LexKeywords.FOR)) return ForStatement();
+        if (_curLex.Is(LexKeywords.IF)) return IfStatement();
         return null;
     }
+
     public ForStatementNode ForStatement()
     {
         Eat();
@@ -207,6 +200,7 @@ public partial class Parser
         var state = Statement();
         return new ForStatementNode(id, expFor, to, expTo, state);
     }
+
     public WhileStatementNode WhileStatement()
     {
         Eat();
@@ -215,6 +209,7 @@ public partial class Parser
         var state = Statement();
         return new WhileStatementNode(exp, state);
     }
+
     public IfStatementNode IfStatement()
     {
         Eat();
