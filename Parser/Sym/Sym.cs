@@ -227,7 +227,6 @@ public class SymFunction : SymProcedure
         visitor.Visit(this);
     }
 }
-
 public class SymTable : Parser.IAcceptable
 {
     public OrderedDictionary Data { get; }

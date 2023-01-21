@@ -27,11 +27,11 @@ public class PrinterVisitor : IVisitor
     public void Print(Lex lex)
     {
         PrintDepth();
-        Console.WriteLine(lex.Value.ToString().ToLower());
+        Console.WriteLine(lex.Source.ToString().ToLower());
     }
     public void Visit(Parser.ProgramNode node)
     {
-        Print("main");
+        Print("program");
         if (node.Name is not null)
         {
             node.Name.Accept(this);
@@ -201,15 +201,14 @@ public class PrinterVisitor : IVisitor
     public void Visit(Parser.VarDeclsNode node)
     {
         depth++;
-        Print("vars");
+        Print("var");
         Print(node.Dels);
         depth--;
     }
     public void Visit(Parser.VarDeclNode node)
     {
         depth++;
-        Print("var");
-        Print(node.names);
+        Print("var decl");
         Print(node.SymVarParams);
         if (node.Exp is not null)
         {
@@ -237,7 +236,7 @@ public class PrinterVisitor : IVisitor
     public void Visit(SymFunction node)
     {
         depth++;
-        Print("func decl");
+        Print("function");
             depth++;
             Print(node.Name);
             depth--;
@@ -249,7 +248,7 @@ public class PrinterVisitor : IVisitor
     public void Visit(SymProcedure node)
     {
         depth++;
-        Print("proc decl");
+        Print("procedure");
             depth++;
             Print(node.Name);
             depth--;
@@ -339,7 +338,6 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(SymType node)
     {
-        Print("type");
         depth++;
         Print(node.Name);
         depth--;
@@ -377,6 +375,7 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(SymConstParam node)
     {
+        Print("const");
         if (node.Type is null)
         {
             node.Type.Accept(this);
@@ -388,6 +387,8 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(SymVarParam node)
     {
+        depth++;
+        Print(node.Name);
         if (node.Type is null)
         {
             Print("no type");
@@ -396,6 +397,7 @@ public class PrinterVisitor : IVisitor
         {
             node.Type.Accept(this);
         }
+        depth--;
     }
 
     public void Visit(SymParam node)
@@ -419,12 +421,15 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(SymTable node)
     {
+        depth++;
+        Print("param");
         foreach (var key in node.Data.Keys)
         {
             var keyCasted = key as string;
             var valueCasted = node.Data[key] as SymVar;
             valueCasted.Accept(this);
         }
+        depth--;
     }
     public void Visit(Parser.ParamSelectionNode node)
     {

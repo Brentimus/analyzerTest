@@ -1,3 +1,2 @@
-begin
-Writeln('Hello world');
-end.
+type i = Integer s = string
+begin end.
