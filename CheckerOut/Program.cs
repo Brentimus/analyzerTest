@@ -170,6 +170,50 @@ internal class Program
             }
         }
     }
+    public static void MakeOutTestParser()
+    {
+        var files = Directory.GetFiles("../../../../Tests/Parser/", "*.in")
+            .Select(f => Path.GetFileName(f)[..^3]).ToList();
+        foreach (var nameFile in files)
+        {
+            var path = $"../../../../Tests/Lexer/{nameFile}.out";
+            try
+            {
+                // Create the file, or overwrite if the file exists.
+                using (FileStream fs = File.Create(path))
+                {
+                    var fileReaderIn = new StreamReader($"../../../../Tests/Parser/{nameFile}.in");
+                    var parser = new Parser.Parser(fileReaderIn);
+                    string text ="";
+                    
+                    var oldOut = Console.Out;
+                    try
+                    {
+                        var sw = new StringWriter();
+                        Console.SetOut(sw);
+                        IVisitor visitor = new PrinterVisitor();
+                        visitor.Visit(parser.Program());
+                        Console.SetOut(oldOut);
+                        var found = sw.ToString();
+                        text += found;
+                    }
+                    catch (SyntaxException e)
+                    {
+                        Console.SetOut(oldOut);
+                        var found = e.Message;
+                        text += found;
+                    }
+                    byte[] info = new UTF8Encoding(true).GetBytes(text);
+                    // Add some information to the file.
+                    fs.Write(info, 0, info.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+    }
     public static void StartTest(string program)
     {
         var files = Directory.GetFiles($"../../../../Tests/{program}/", "*.in")
@@ -192,9 +236,10 @@ internal class Program
     private static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-        StartTest("Lexer");
-        StartTest("SimpleParser");
-        StartTest("Parser");
+        MakeOutTestParser();
+        //StartTest("Lexer");
+        //StartTest("SimpleParser");
+        //StartTest("Parser");
         Console.Out.Write($"TOTAL: {total}/{test}");
     }
 }

@@ -328,7 +328,10 @@ public partial class Parser
 
         if (lex.Is(LexType.Keyword))
             if (lex.Is(LexKeywords.TRUE, LexKeywords.FALSE))
+            {
+                Eat();
                 return new BooleanNode(lex);
+            }
         if (lex.Is(LexType.Identifier)) return VarRef();
         if (lex.Is(LexKeywords.WRITE, LexKeywords.READ, LexKeywords.WRITELN, LexKeywords.READLN)) return Stream();
         if (lex.Is(LexSeparator.Lparen))

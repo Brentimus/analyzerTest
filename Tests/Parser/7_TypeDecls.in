@@ -3,5 +3,4 @@ type
     int = integer;
     MyString = string;
     MyDouble = double;
-begin
-end.
+begin end.

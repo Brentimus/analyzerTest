@@ -80,6 +80,7 @@ public partial class Parser
 
     public SymRecord RecordType()
     {
+        Eat();
         var fieldList = new List<List<FieldSelectionNode>>();
         while (!_curLex.Is(LexKeywords.END)) fieldList.Add(FieldList());
         Require(LexKeywords.END);

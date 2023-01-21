@@ -240,7 +240,6 @@ public class PrinterVisitor : IVisitor
     public void Visit(Parser.KeywordNode node)
     {
         _depth++;
-        PrintDepth();
         Print(node.LexCur);
         _depth--;
     }
@@ -300,10 +299,15 @@ public class PrinterVisitor : IVisitor
     {
         _depth++;
         Print("for");
+        Print(":=");
         node.Id.Accept(this);
         node.ExpFor.Accept(this);
+        _depth--;
         node.To.Accept(this);
+        _depth++;
+        _depth++;
         node.ExpTo.Accept(this);
+        _depth--;
         node.State.Accept(this);
         _depth--;
     }
@@ -316,11 +320,9 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(SymArray node)
     {
-        _depth++;
         Print(node.Name);
         node.Type.Accept(this);
         Print(node.Range);
-        _depth--;
     }
     public void Visit(SymRecord node)
     {
