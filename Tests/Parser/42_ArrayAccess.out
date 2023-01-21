@@ -1,0 +1,48 @@
+program
+   decls
+      vars
+         var
+            array1
+            array
+            type
+               integer
+            range
+               ..
+                  0
+                  100
+            no expression
+         var
+            array2
+            array
+            type
+               integer
+            range
+               ..
+                  0
+                  100
+            range
+               ..
+                  0
+                  100
+            no expression
+   block
+      compounds statements
+         call
+            writeln
+               array access
+                  array1
+                  0
+         call
+            writeln
+               array access
+                  array access
+                     array2
+                     25
+                  25
+         call
+            writeln
+               array access
+                  array access
+                     array2
+                     50
+                  50

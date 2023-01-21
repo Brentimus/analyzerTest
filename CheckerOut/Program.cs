@@ -69,7 +69,7 @@ internal class Program
             visitor.Visit(parser.Program());
             Console.SetOut(oldOut);
             var found = sw.ToString();
-            if (line + "\r\n" != found)
+            if (line != found)
             {
                 Console.WriteLine(pathFile + '\t' + "WA");
                 Console.WriteLine("expected:\n" + line);
@@ -176,7 +176,7 @@ internal class Program
             .Select(f => Path.GetFileName(f)[..^3]).ToList();
         foreach (var nameFile in files)
         {
-            var path = $"../../../../Tests/Lexer/{nameFile}.out";
+            var path = $"../../../../Tests/Parser/{nameFile}.out";
             try
             {
                 // Create the file, or overwrite if the file exists.
@@ -196,6 +196,7 @@ internal class Program
                         Console.SetOut(oldOut);
                         var found = sw.ToString();
                         text += found;
+                        //text = text.TrimEnd('\n');
                     }
                     catch (SyntaxException e)
                     {
@@ -236,10 +237,10 @@ internal class Program
     private static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-        MakeOutTestParser();
-        //StartTest("Lexer");
-        //StartTest("SimpleParser");
-        //StartTest("Parser");
+        //MakeOutTestParser();
+        StartTest("Lexer");
+        StartTest("SimpleParser");
+        StartTest("Parser");
         Console.Out.Write($"TOTAL: {total}/{test}");
     }
 }
