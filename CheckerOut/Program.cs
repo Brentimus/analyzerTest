@@ -50,7 +50,7 @@ internal class Program
             }
         }
 
-        Console.WriteLine($"TEST {test}\tOK");
+        Console.WriteLine($"TEST {test} OK");
         return true;
     }
     public static bool Parser(string pathFile)
@@ -90,7 +90,7 @@ internal class Program
             }
         }
 
-        Console.WriteLine($"TEST {test}\tOK");
+        Console.WriteLine($"TEST {test} OK");
         return true;
     }
     public static bool Lexer(string pathFile)
@@ -127,7 +127,7 @@ internal class Program
                 break;
             }
         } while (!fileReaderIn.EndOfStream);
-        Console.WriteLine($"TEST {test}\tOK");
+        Console.WriteLine($"TEST {test} OK");
         return true;
     }
     public static void MakeOutTest()
