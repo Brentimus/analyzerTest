@@ -138,6 +138,22 @@ public class PrinterVisitor : IVisitor
         Print(node.Name);
         _depth--;
     }
+
+    public void Visit(SymConst node)
+    {
+        _depth++;
+        Print(node.Name);
+        if (node.Type is not null)
+        {
+            node.Type.Accept(this);
+        }
+        else
+        {
+            Print("no type");
+        }
+        _depth--;
+    }
+
     public void Visit(Parser.BlockNode node)
     {
         _depth++;
@@ -182,10 +198,11 @@ public class PrinterVisitor : IVisitor
     public void Visit(Parser.VarDeclNode node)
     {
         _depth++;
+        
         Print("var");
         Print(node.Names);
         _depth++;
-        node.SymVarParams[0].Type.Accept(this);
+        node.SymVars[0].Type.Accept(this);
         if (node.Exp is not null)
         {
             node.Exp.Accept(this);
@@ -320,9 +337,11 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(SymArray node)
     {
+        _depth++;
         Print(node.Name);
+        node.Range.Accept(this);
+        _depth--;
         node.Type.Accept(this);
-        Print(node.Range);
     }
     public void Visit(SymRecord node)
     {
@@ -333,11 +352,13 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(Parser.TypeRangeNode node)
     {
+        _depth++;
         Print("range");
         _depth++;
         Print("..");
         node.Begin.Accept(this);
         node.End.Accept(this);
+        _depth--;
         _depth--;
     }
     public void Visit(Parser.FieldSelectionNode node)

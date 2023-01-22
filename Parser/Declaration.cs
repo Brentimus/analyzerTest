@@ -29,15 +29,15 @@ public partial class Parser
 
     public class VarDeclNode : DeclarationNode
     {
-        public VarDeclNode(List<IdNode> names, List<SymVarParam> symVarParams, ExpressionNode? exp)
+        public VarDeclNode(List<IdNode> names, List<SymVar> symVars, ExpressionNode? exp)
         {
             Names = names;
-            SymVarParams = symVarParams;
+            SymVars = symVars;
             Exp = exp;
         }
 
         public List<IdNode> Names { get; }
-        public List<SymVarParam> SymVarParams { get; }
+        public List<SymVar> SymVars { get; }
         public ExpressionNode? Exp { get; }
 
         public override void Accept(IVisitor visitor)
@@ -163,11 +163,11 @@ public partial class Parser
         foreach (var local in locals)
         foreach (var idNode in local.Ids)
             if (local.Modifier is null)
-                table.Push(new SymParam(idNode, local.Type), true);
+                table.Push(idNode, new SymParam(idNode, local.Type), true);
             else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
-                table.Push(new SymConstParam(idNode, local.Type), true);
+                table.Push(idNode, new SymConstParam(idNode, local.Type), true);
             else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
-                table.Push(new SymVarParam(idNode, local.Type), true);
+                table.Push(idNode, new SymVarParam(idNode, local.Type), true);
         return new SymFunction(id, table, new BlockNode(decls, compound), type);
     }
 
@@ -196,11 +196,11 @@ public partial class Parser
         foreach (var local in locals)
         foreach (var idNode in local.Ids)
             if (local.Modifier is null)
-                table.Push(new SymParam(idNode, local.Type), true);
+                table.Push(idNode, new SymParam(idNode, local.Type), true);
             else if (local.Modifier.LexCur.Is(LexKeywords.CONST))
-                table.Push(new SymConstParam(idNode, local.Type), true);
+                table.Push(idNode, new SymConstParam(idNode, local.Type), true);
             else if (local.Modifier.LexCur.Is(LexKeywords.VAR))
-                table.Push(new SymVarParam(idNode, local.Type), true);
+                table.Push(idNode, new SymVarParam(idNode, local.Type), true);
 
         return new SymProcedure(id, table, new BlockNode(decls, compound));
     }
@@ -295,7 +295,7 @@ public partial class Parser
     private VarDeclNode VarDecl()
     {
         var names = new List<IdNode>();
-        var symVarParam = new List<SymVarParam>();
+        var symVarParam = new List<SymVar>();
         names.Add(Id());
         while (_curLex.Is(LexSeparator.Comma))
         {
@@ -305,7 +305,7 @@ public partial class Parser
 
         Require(LexSeparator.Colon);
         var type = Type();
-        foreach (var i in names) symVarParam.Add(new SymVarParam(i, type));
+        foreach (var i in names) symVarParam.Add(new SymVar(i, type));
 
         ExpressionNode? exp = null;
         if (_curLex.Is(LexOperator.Equal))

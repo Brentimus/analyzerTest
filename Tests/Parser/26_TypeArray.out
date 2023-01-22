@@ -4,45 +4,48 @@ program
       vars
          var
             a
-            array
+               array
+                  range
+                     ..
+                        0
+                        1
             type
                integer
-            range
-               ..
-                  0
-                  1
             no expression
          var
             b
-            array
+               array
+                  range
+                     ..
+                        0
+                        1
+               array
+                  range
+                     ..
+                        a
+                        3
             type
                string
-            range
-               ..
-                  0
-                  1
-            range
-               ..
-                  a
-                  3
             no expression
          var
             c
-            array
+               array
+                  range
+                     ..
+                        0
+                        1
+               array
+                  range
+                     ..
+                        a
+                        3
+               array
+                  range
+                     ..
+                        b
+                        c
             type
                double
-            range
-               ..
-                  0
-                  1
-            range
-               ..
-                  a
-                  3
-            range
-               ..
-                  b
-                  c
             no expression
    block
       compounds statements

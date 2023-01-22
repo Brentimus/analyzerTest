@@ -1,4 +1,5 @@
 var a : integer;
+var a : string;
 begin
     a := '123';
     Writeln(1);;;;

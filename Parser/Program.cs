@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Parser;
+using Parser.Sym;
 using Parser.Visitor;
 
 internal class program
@@ -12,10 +13,21 @@ internal class program
             var parser = new Parser.Parser(fileReader);
             try
             {
+                var programNode = parser.Program();
+                
+                SymStack _symStack = new SymStack();
+                SymVisitor visitorSym = new SymVisitor(_symStack);
+                visitorSym.Visit(programNode);
+                
                 IVisitor visitor = new PrinterVisitor();
-                visitor.Visit(parser.Program());
+                visitor.Visit(programNode);
+
             }
             catch (SyntaxException e)
+            {
+                Console.Write(e.Message);
+            }
+            catch (SemanticException e)
             {
                 Console.Write(e.Message);
             }

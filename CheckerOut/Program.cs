@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Lexer;
 using Parser;
+using Parser.Sym;
 using Parser.Visitor;
 
 namespace ChekerOut;
@@ -78,6 +79,54 @@ internal class Program
             }
         }
         catch (SyntaxException e)
+        {
+            Console.SetOut(oldOut);
+            var found = e.Message;
+            if (line != found)
+            {
+                Console.WriteLine(pathFile + '\t' + "WA");
+                Console.WriteLine("expected:\n" + line);
+                Console.WriteLine("found:\n" + found);
+                return false;
+            }
+        }
+
+        Console.WriteLine($"TEST {test} OK");
+        return true;
+    }
+    
+    public static bool Semantic(string pathFile)
+    {
+        test++;
+        var fileReaderIn = new StreamReader(pathFile + ".in");
+        var parser = new Parser.Parser(fileReaderIn);
+        var fileReaderOut = new StreamReader(pathFile + ".out");
+        var line = fileReaderOut.ReadToEnd();
+        var oldOut = Console.Out;
+        try
+        {
+            var sw = new StringWriter();
+            Console.SetOut(sw);
+            var programNode = parser.Program();
+            
+            SymStack _symStack = new SymStack();
+            SymVisitor symVisitor = new SymVisitor(_symStack);
+            symVisitor.Visit(programNode);
+            
+            IVisitor visitor = new PrinterVisitor();
+            visitor.Visit(programNode);
+            
+            Console.SetOut(oldOut);
+            var found = sw.ToString();
+            if (line != found)
+            {
+                Console.WriteLine(pathFile + '\t' + "WA");
+                Console.WriteLine("expected:\n" + line);
+                Console.WriteLine("found:\n" + found);
+                return false;
+            }
+        }
+        catch (SemanticException e)
         {
             Console.SetOut(oldOut);
             var found = e.Message;
@@ -230,6 +279,8 @@ internal class Program
                 check = SimpleParser($"../../../../Tests/{program}/" + file);
             else if (program == "Parser")
                 check = Parser($"../../../../Tests/{program}/" + file);
+            else if (program == "Semantic")
+                check = Semantic($"../../../../Tests/{program}/" + file);
             
             if (check) total++;
         }
@@ -241,6 +292,7 @@ internal class Program
         StartTest("Lexer");
         StartTest("SimpleParser");
         StartTest("Parser");
+        StartTest("Semantic");
         Console.Out.Write($"TOTAL: {total}/{test}");
     }
 }

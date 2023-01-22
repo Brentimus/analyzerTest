@@ -19,6 +19,7 @@ public interface IVisitor
     void Visit(SymChar node);
     void Visit(SymString node);
     void Visit(SymBoolean node);
+    void Visit(SymConst node);
     void Visit(Parser.BlockNode node);
     void Visit(Parser.ConstDeclsNode node);
     void Visit(Parser.VarDeclsNode node);

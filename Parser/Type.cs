@@ -32,11 +32,16 @@ public partial class Parser
     {
         Eat();
         Require(LexSeparator.Lbrack);
-        var range = TypeRanges();
+        var ranges = TypeRanges();
         Require(LexSeparator.Rbrack);
         Require(LexKeywords.OF);
         var type = Type();
-        return new SymArray(type, range);
+        ranges.Reverse();
+        foreach (var range in ranges)
+        {
+            type = new SymArray(type, range);
+        }
+        return (type as SymArray)!;
     }
 
     public List<TypeRangeNode> TypeRanges()
@@ -88,7 +93,7 @@ public partial class Parser
         foreach (var filds in fieldList)
         foreach (var field in filds)
         foreach (var idNode in field.Ids)
-            table.Push(new SymVar(idNode, field.Type), true);
+            table.Push(idNode, new SymVar(idNode, field.Type), true);
         return new SymRecord(table);
     }
 

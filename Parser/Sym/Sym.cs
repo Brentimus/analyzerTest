@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using Parser.Visitor;
+using Lexer;
 
 namespace Parser.Sym;
 
@@ -30,6 +31,7 @@ public class SymType : Sym
     {
         return ResolveAlias().Name.Equals(other.ResolveAlias().Name);
     }
+    
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
@@ -129,6 +131,10 @@ public class SymConst : SymVar
     public SymConst(Parser.IdNode id, SymType type) : base(id, type)
     {
     }
+    public override void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
 public class SymVarParam : SymParam
 {
@@ -163,12 +169,27 @@ public class SymRecord : SymType
 
     public override bool Is(SymType other)
     {
-        if (!(other is SymRecord))
+        if (other is not SymRecord)
         {
             return false;
         }
 
-        // TODO: ?
+        var otherCasted = other as SymRecord;
+        foreach (string field in Fields.Data.Keys)
+        {
+            var sym = Fields.Get(field) as SymVar;
+            if (!otherCasted!.Fields.Contains(sym!.Name))
+            {
+                return false;
+            }
+
+            var otherSym = otherCasted.Fields.Get(sym.Name) as SymVar;
+
+            if (!sym.Type.Is(otherSym!.Type))
+            {
+                return false;
+            }
+        }
 
         return true;
     }
@@ -180,12 +201,18 @@ public class SymRecord : SymType
 public class SymArray : SymType
 {
     public SymType Type { get; }
-    public List<Parser.TypeRangeNode> Range { get; }
-    public SymArray(SymType type, List<Parser.TypeRangeNode> range) : base("array")
+    public Parser.TypeRangeNode Range { get; }
+    public SymArray(SymType type, Parser.TypeRangeNode range) : base("array")
     {
         Type = type;
         Range = range;
     }
+
+    public override bool Is(SymType other)
+    {
+        return other is SymArray && Type.Is((other as SymArray)!.Type);
+    }
+
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
@@ -240,7 +267,7 @@ public class SymTable : Parser.IAcceptable
         Data = new OrderedDictionary();
     }
 
-    public void Push(Sym sym, bool is_parser = false)
+    public void Push(Parser.IdNode id, Sym sym, bool is_parser = false)
     {
         if (is_parser && Contains(sym.Name))
         {
@@ -249,7 +276,7 @@ public class SymTable : Parser.IAcceptable
 
         if (Contains(sym.Name))
         {
-            throw new Exception();
+            throw new SemanticException(id.LexCur.Pos, $"Duplicate identifier {sym.Name}");
         }
 
         Data.Add(sym.Name, sym);
@@ -316,29 +343,34 @@ public class SymStack
 {
     public List<SymTable> Data { get; }
 
-    void Push(SymTable data)
+    public SymStack()
+    {
+        Data = new List<SymTable>();
+    }
+
+    public void Push(SymTable data)
     {
         Data.Add(data);
     }
 
-    void Alloc()
+    public void Alloc()
     {
         Data.Add(new SymTable());
     }
 
-    void AllocBuiltins()
+    public void AllocBuiltins()
     {
         var a = new SymTable();
         a.Alloc();
         Data.Add(a);
     }
 
-    void Push(Sym sym)
+    public void Push(Parser.IdNode id, Sym sym)
     {
-        Data[^1].Push(sym);
+        Data[^1].Push(id, sym);
     }
 
-    Sym? Get(string name)
+    public Sym? Get(string name)
     {
         for (var i = Data.Count - 1; i >= 0; i--)
             if (Data[i].Contains(name))
@@ -347,7 +379,7 @@ public class SymStack
         throw new Exception();
     }
 
-    void Pop()
+    public void Pop()
     {
         Data.Remove(Data[^1]);
     }

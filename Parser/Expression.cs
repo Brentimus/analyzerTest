@@ -8,6 +8,7 @@ public partial class Parser
 {
     public abstract class ExpressionNode : Node
     {
+        public SymType SymType { get; set; }
     }
 
     public abstract class VarRefNode : ExpressionNode
@@ -41,7 +42,7 @@ public partial class Parser
             Right = right;
         }
 
-        public Lex Op { get;}
+        public Lex Op { get; }
 
         public Node Right { get; }
         public Node Left { get; }
@@ -217,6 +218,7 @@ public partial class Parser
             return LexCur.Value.ToString()!.ToLower();
         }
     }
+
     public class NumberExpressionNode : ExpressionNode
     {
         public NumberExpressionNode(Lex lexeme)
@@ -320,6 +322,7 @@ public partial class Parser
             Eat();
             return new CharNode(lex);
         }
+
         if (lex.Is(LexType.Integer) || lex.Is(LexType.Double))
         {
             Eat();
@@ -332,6 +335,7 @@ public partial class Parser
                 Eat();
                 return new BooleanNode(lex);
             }
+
         if (lex.Is(LexType.Identifier)) return VarRef();
         if (lex.Is(LexKeywords.WRITE, LexKeywords.READ, LexKeywords.WRITELN, LexKeywords.READLN)) return Stream();
         if (lex.Is(LexSeparator.Lparen))

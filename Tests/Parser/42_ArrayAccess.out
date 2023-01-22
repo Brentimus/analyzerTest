@@ -3,27 +3,28 @@ program
       vars
          var
             array1
-            array
+               array
+                  range
+                     ..
+                        0
+                        100
             type
                integer
-            range
-               ..
-                  0
-                  100
             no expression
          var
             array2
-            array
+               array
+                  range
+                     ..
+                        0
+                        100
+               array
+                  range
+                     ..
+                        0
+                        100
             type
                integer
-            range
-               ..
-                  0
-                  100
-            range
-               ..
-                  0
-                  100
             no expression
    block
       compounds statements
