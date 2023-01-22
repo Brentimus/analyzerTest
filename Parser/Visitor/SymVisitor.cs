@@ -82,10 +82,7 @@ public class SymVisitor : IVisitor
 
     public void Visit(SymConst node)
     {
-        if (node.Type is not null)
-        {
-            
-        }
+        throw new NotImplementedException();
     }
     public void Visit(SymInteger node)
     {
@@ -216,16 +213,34 @@ public class SymVisitor : IVisitor
 
     public void Visit(Parser.ConstDeclNode node)
     {
-        node.Exp?.Accept(this);
-        node.SymConst.Accept(this);
+        var sym = node.SymConst;
+        var id = node.Name;
+        if (sym.Type is not SymArray or not SymRecord)
+        {
+            _symStack.Get(sym.Type.Name);
+        }
+        _symStack.Push(id, sym);
+        if (node.Exp is not null)
+        {
+            node.Exp.Accept(this);
+            // TODO: CAST INTEGER TO DOUBLE
+            if (!node.Exp.SymType.Is(node.SymConst.Type))
+            {
+                //TODO: FIX LEXCUR.POS
+                throw new SyntaxException(id.LexCur.Pos,
+                    $"incompatible types: got '{node.Exp.SymType.Name}' expected '{node.SymConst.Type.Name}'");
+            }
+        }
     }
 
     public void Visit(Parser.VarDeclNode node)
     {
+        Parser.IdNode idNode = null!;
         foreach (var item in Enumerable.Zip(node.SymVars, node.Names))
         {
             var sym = item.First as SymVar;
             var id = item.Second as Parser.IdNode;
+            idNode = id;
             if (sym.Type is not SymArray or not SymRecord)
             {
                 _symStack.Get(sym.Type.Name);
@@ -239,6 +254,8 @@ public class SymVisitor : IVisitor
             // TODO: CAST INTEGER TO DOUBLE
             if (!node.Exp.SymType.Is(node.SymVars[0].Type))
             {
+                throw new SyntaxException(idNode.LexCur.Pos,
+                    $"incompatible types: got '{node.Exp.SymType.Name}' expected '{node.SymVars[0].Type.Name}'");
                 throw new Exception();
             }
         }

@@ -78,12 +78,14 @@ public partial class Parser
 
     public class ConstDeclNode : DeclarationNode
     {
-        public ConstDeclNode(SymConst symConst, ExpressionNode exp)
+        public ConstDeclNode(IdNode name, SymConst symConst, ExpressionNode exp)
         {
+            Name = name;
             SymConst = symConst;
             Exp = exp;
         }
 
+        public IdNode Name { get; }
         public SymConst SymConst { get; }
         public ExpressionNode Exp { get; }
 
@@ -262,7 +264,7 @@ public partial class Parser
         Require(LexOperator.Equal);
         var exp = Expression();
         Require(LexSeparator.Semicolom);
-        return new ConstDeclNode(new SymConst(id, type), exp);
+        return new ConstDeclNode(id, new SymConst(id, type), exp);
     }
 
     private SymAlias TypeDecl()

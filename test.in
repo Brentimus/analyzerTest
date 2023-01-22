@@ -1,7 +1,4 @@
-var a : integer;
-var a : string;
+var a : string = 1;
+
 begin
-    a := '123';
-    Writeln(1);;;;
-    Write(2)
 end.
