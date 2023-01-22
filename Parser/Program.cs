@@ -21,6 +21,7 @@ internal class program
                 
                 IVisitor visitor = new PrinterVisitor();
                 visitor.Visit(programNode);
+                _symStack.Print(_symStack);
 
             }
             catch (SyntaxException e)

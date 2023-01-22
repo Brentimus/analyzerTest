@@ -24,11 +24,11 @@ program
             y
             type
                string
-            '1'
+               '1'
          var
             z
             type
                char
-            #123
+               #123
    block
       compounds statements

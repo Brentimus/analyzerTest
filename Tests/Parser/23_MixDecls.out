@@ -29,7 +29,7 @@ program
             b
             type
                string
-         'hello world'
+            'hello world'
       decls types
          decl type
             int

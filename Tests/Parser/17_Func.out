@@ -35,6 +35,6 @@ program
             compounds statements
                call
                   writeln
-                  'hello world'
+                     'hello world'
    block
       compounds statements

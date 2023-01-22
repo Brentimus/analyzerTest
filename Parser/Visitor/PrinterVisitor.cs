@@ -52,7 +52,9 @@ public class PrinterVisitor : IVisitor
 
     public void Visit(Parser.CharNode node)
     {
+        _depth++;
         Print(node.LexCur);
+        _depth--;
     }
 
     public void Visit(Parser.UnOpExpressionNode node)
@@ -94,7 +96,9 @@ public class PrinterVisitor : IVisitor
     }
     public void Visit(Parser.StringNode node)
     {
+        _depth++;
         Print(node.LexCur);
+        _depth--;
     }
     public void Visit(Parser.BooleanNode node)
     {

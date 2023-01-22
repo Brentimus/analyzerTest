@@ -115,6 +115,7 @@ internal class Program
             
             IVisitor visitor = new PrinterVisitor();
             visitor.Visit(programNode);
+            _symStack.Print(_symStack);
             
             Console.SetOut(oldOut);
             var found = sw.ToString();

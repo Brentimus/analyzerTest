@@ -16,6 +16,6 @@ program
             y
             type
                string
-            '1'
+               '1'
    block
       compounds statements
