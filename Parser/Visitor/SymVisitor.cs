@@ -1,5 +1,3 @@
-using System.IO.IsolatedStorage;
-using System.Runtime.InteropServices;
 using Lexer;
 using Parser.Sym;
 
@@ -26,12 +24,7 @@ public class SymVisitor : IVisitor
     {
         return types.Any(type => type.Is(left) && type.Is(right));
     }
-
-    private bool IsTypeEqual(SymType symType, params SymType[] types)
-    {
-        return types.Any(type => type.Is(symType));
-    }
-
+    
     public void TypeExist(Parser.ExpressionNode exp)
     {
         if (exp.SymType is null) throw new SemanticException(exp.LexCur!.Pos, "it's not return value");
@@ -41,7 +34,16 @@ public class SymVisitor : IVisitor
     {
         _symStack.AllocBuiltins();
         _symStack.Alloc();
-        node.Name?.Accept(this);
+        if (node.Name is not null)
+        {
+            var programName = new SymProgramName(node.Name.ToString());
+            _symStack.Push(node.Name, programName);
+        }
+        else
+        {
+            var ProgramName = new SymProgramName("without name");
+            _symStack.Push(node.Name, ProgramName);
+        }
         node.Block.Accept(this);
     }
 
@@ -151,7 +153,7 @@ public class SymVisitor : IVisitor
 
         if (node.RecordVarRef.SymType is not SymRecord)
         {
-            throw new SemanticException(node.RecordVarRef.LexCur.Pos, $"not found '{node.RecordVarRef.LexCur.Source}'");
+            throw new SemanticException(node.RecordVarRef.LexCur.Pos, $"Identifier not found '{node.RecordVarRef.LexCur.Source}'");
         }
 
         var recordType = node.RecordVarRef.SymType as SymRecord;
@@ -201,7 +203,6 @@ public class SymVisitor : IVisitor
         {
             node.SymType = new SymDouble();
         }
-
         node.LValue = false;
     }
 
@@ -221,6 +222,7 @@ public class SymVisitor : IVisitor
     {
         var type = _symStack.Get(node.LexCur, node.ToString()) as SymVar;
         node.SymType = type.Type.ResolveAlias();
+        node.LValue = true;
     }
 
     public void Visit(SymConst node)
@@ -277,12 +279,23 @@ public class SymVisitor : IVisitor
 
     public void Visit(SymFunction node)
     {
-        throw new NotImplementedException();
+        var localTable = new SymTable();
+        _symStack.Push(localTable);
+        node.Locals.Accept(this);
+        node.Block.Accept(this);
+        _symStack.Pop();
+        _symStack.Push(node.Id, node);
+        node.Id.SymType = node.ReturnType;
     }
 
     public void Visit(SymProcedure node)
     {
-        throw new NotImplementedException();
+        var localTable = new SymTable();
+        _symStack.Push(localTable);
+        node.Locals.Accept(this);
+        node.Block.Accept(this);
+        _symStack.Pop();
+        _symStack.Push(node.Id, node);
     }
 
     public void Visit(SymAlias node)
@@ -304,11 +317,54 @@ public class SymVisitor : IVisitor
     public void Visit(Parser.FunctionCallStatementNode node)
     {
         Accept(node.Args);
+        if (node.Name.LexCur.Is(LexKeywords.WRITE, LexKeywords.WRITELN, LexKeywords.READ, LexKeywords.READLN))
+        {
+            foreach (var arg in node.Args)
+            {
+                if ((arg.SymType is SymRecord or SymArray))
+                {
+                    throw new SemanticException(arg.LexCur.Pos, "Can't read or write variables of this type");
+                }
+                if (node.Name.LexCur.Is(LexKeywords.READ,LexKeywords.READLN))
+                {
+                    if (!arg.LValue)
+                    {
+                        throw new SemanticException(arg.LexCur.Pos, "variable identifier expected");
+                    }
+
+                    if (arg.SymType.Is(new SymBoolean()))
+                    {
+                        throw new SemanticException(arg.LexCur.Pos, "Can't read or write variables of this type");
+                    }
+                }
+            }
+            return;
+        }
+
+        var symProcedure = _symStack.Get(node.LexCur, node.Name.ToString()) as SymProcedure;
+        
+        if (node.Args.Count != symProcedure.Locals.Data.Count)
+            throw new SemanticException(node.Name.LexCur.Pos, $"call doesn't match header");
+        
+        for (int i = 0; i < node.Args.Count; ++i)
+        {
+            var type = ((SymParam) symProcedure.Locals.Data[i]).Type;
+            
+            //TODO: CAST
+            if (!node.Args[i].SymType.Is(type.ResolveAlias()))
+            {
+                throw new SemanticException(node.Name.LexCur.Pos, $"call doesn't match header");
+            }
+        }
+
+        if (symProcedure is SymFunction)
+            node.Name.SymType = (symProcedure as SymFunction).ReturnType;
     }
 
     public void Visit(Parser.AssignmentStatementNode node)
     {
         node.VarRef.Accept(this);
+        node.Exp.Accept(this);
         if (!node.VarRef.LValue)
         {
             throw new SemanticException(node.VarRef.LexCur.Pos, "lvalue expected");
@@ -320,10 +376,31 @@ public class SymVisitor : IVisitor
         {
             if (left is SymProcedure)
             {
+                throw new SemanticException(node.VarRef.LexCur.Pos, $"{node.VarRef.LexCur.Source} is not expression");
+                
             }
             //TODO: FUNC CHECK ?
         }
-        throw new NotImplementedException();
+        
+        var right = node.Exp.SymType;
+        switch (node.Op.Value)
+        {
+            case LexOperator.Assign:
+                if (IsTypeEqual(left, right,
+                        new SymInteger(), new SymDouble(),
+                        new SymDouble(), new SymChar(), new SymString()))
+                return;
+                break;
+            case LexOperator.AssignSub:
+            case LexOperator.AssignAdd:
+            case LexOperator.AssignDiv:
+            case LexOperator.AssignMul:
+                if (IsTypeEqual(left, right, new SymInteger(), new SymDouble()))
+                    return;
+                break;
+        }
+        throw new SemanticException(node.Op.Pos,
+            $"operator is not overloaded: '{left.Name}' {node.Op.Source} '{right.Name}'");
     }
 
     public void Visit(Parser.IfStatementNode node)
@@ -386,7 +463,7 @@ public class SymVisitor : IVisitor
         if (node.Fields.Duplicate is not null)
         {
             throw new SemanticException(node.Fields.Duplicate.LexCur.Pos,
-                $"Duplicate {node.Fields.Duplicate.LexCur.Source}");
+                $"Duplicate '{node.Fields.Duplicate.LexCur.Source}'");
         }
         node.Fields.Accept(this);
     }
@@ -434,7 +511,7 @@ public class SymVisitor : IVisitor
         if (!node.Exp.SymType.Is(node.SymConst.Type))
         {
             //TODO: FIX LEXCUR.POS
-            throw new SemanticException(id.LexCur.Pos,
+            throw new SemanticException(node.Exp.LexCur.Pos,
                 $"incompatible types: got '{node.Exp.SymType.Name}' expected '{node.SymConst.Type.Name}'");
         }
     }
@@ -471,17 +548,20 @@ public class SymVisitor : IVisitor
 
     public void Visit(SymConstParam node)
     {
-        throw new NotImplementedException();
+        _symStack.Push(node.Id, node);
+        node.Id.Accept(this);
     }
 
     public void Visit(SymVarParam node)
     {
-        throw new NotImplementedException();
+        _symStack.Push(node.Id, node);
+        node.Id.Accept(this);
     }
 
     public void Visit(SymParam node)
     {
-        throw new NotImplementedException();
+        _symStack.Push(node.Id, node);
+        node.Id.Accept(this);
     }
 
     public void Visit(SymVar node)
@@ -491,7 +571,10 @@ public class SymVisitor : IVisitor
 
     public void Visit(SymTable node)
     {
-        
+        foreach (var key in node.Data.Keys)
+        {
+            (node.Data[key] as SymVar)!.Accept(this);
+        }
     }
 
     public void Visit(Parser.ParamSelectionNode node)
@@ -528,6 +611,9 @@ public class SymVisitor : IVisitor
         if (IsTypeEqual(left,right, new SymDouble(), new SymInteger(), new SymBoolean(), new SymString()) &&
             node.Op.Is(LexOperator.Equal, LexOperator.Less, LexOperator.More, LexOperator.NoEqual, LexOperator.LessEqual,
                 LexOperator.MoreEqual))
+            return;
+        if (left.Is(new SymInteger()) && right.Is(new SymDouble()) ||
+           ((right.Is(new SymInteger()) && left.Is(new SymDouble()))))
             return;
         throw new SemanticException(node.Op.Pos, $"Operator is not overloaded: {left.Name} {node.Op.Source} {right.Name}");
     }

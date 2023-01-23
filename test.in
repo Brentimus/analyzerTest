@@ -1,3 +1,6 @@
-var a: record a: Integer; d: Double; b: Boolean; s: String; r: record field: Integer; end; end;
+procedure f(i: Integer; c: Double; c_cast: Double; b: Boolean; s: string);
+begin end;
 
-begin writeln(a.a, a.d, a.b, a.s, a.r.field, a.c); end.
+begin
+f(100, 20.3, 10.1, True, 'hello, world');
+end.

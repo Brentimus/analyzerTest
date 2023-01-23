@@ -14,7 +14,7 @@ public partial class Parser
         }
 
         public SymType SymType { get; set; } = null!;
-        public bool LValue;
+        public bool LValue { get; set; }
     }
 
     public abstract class VarRefNode : ExpressionNode
@@ -23,7 +23,7 @@ public partial class Parser
         {
             LValue = true;
         }
-        public bool LValue;
+        public bool LValue { get; set; }
     }
 
     public class UnOpExpressionNode : ExpressionNode
