@@ -93,7 +93,7 @@ public partial class Parser
         foreach (var filds in fieldList)
         foreach (var field in filds)
         foreach (var idNode in field.Ids)
-            table.Push(idNode, new SymVar(idNode, field.Type), true);
+            table.Push(idNode, new SymVar(idNode, field.Type));
         return new SymRecord(table);
     }
 

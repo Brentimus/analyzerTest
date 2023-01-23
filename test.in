@@ -1,13 +1,3 @@
-program main;
-var
-    e,w: double;
-    x,u: integer;
-    y,m: string;
-const 
-    a = 5;
-    b:string = 'hello world';
-type 
-    int = integer;
-    MyString = string;
-begin
-end.
+var a: record a: Integer; d: Double; b: Boolean; s: String; r: record field: Integer; end; end;
+
+begin writeln(a.a, a.d, a.b, a.s, a.r.field, a.c); end.

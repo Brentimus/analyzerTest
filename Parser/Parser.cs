@@ -21,16 +21,18 @@ public partial class Parser : Buffer
 
     public abstract class Node : IAcceptable
     {
+        public Node(Lex? lex = null) => LexCur = lex;
+        public Lex? LexCur { get; }
         public abstract void Accept(IVisitor visitor);
-        }
+    }
 
     public class KeywordNode : Node
     {
-        public KeywordNode(Lex lexCur)
+        public KeywordNode(Lex lexCur) : base(lexCur)
         {
             LexCur = lexCur;
         }
-        public Lex LexCur { get; set; }
+        public Lex LexCur { get; }
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);

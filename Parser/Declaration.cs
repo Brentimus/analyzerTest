@@ -78,7 +78,7 @@ public partial class Parser
 
     public class ConstDeclNode : DeclarationNode
     {
-        public ConstDeclNode(IdNode name, SymConst symConst, ExpressionNode exp)
+        public ConstDeclNode(IdNode name, SymConst symConst, ExpressionNode exp) 
         {
             Name = name;
             SymConst = symConst;

@@ -45,7 +45,7 @@ public partial class Parser
 
     public class ForStatementNode : StatementNode
     {
-        public ForStatementNode(IdNode id, ExpressionNode expFor, KeywordNode to, ExpressionNode expTo,
+        public ForStatementNode(VarRefNode id, ExpressionNode expFor, KeywordNode to, ExpressionNode expTo,
             StatementNode state)
         {
             Id = id;
@@ -55,7 +55,7 @@ public partial class Parser
             State = state;
         }
 
-        public IdNode Id { get; }
+        public VarRefNode Id { get; }
         public ExpressionNode ExpFor { get; }
         public ExpressionNode ExpTo { get; }
         public KeywordNode To { get; }
@@ -190,7 +190,7 @@ public partial class Parser
     public ForStatementNode ForStatement()
     {
         Eat();
-        var id = Id();
+        var id = VarRef();
         Require(LexOperator.Assign);
         var expFor = Expression();
         Require(_curLex.Is(LexKeywords.TO) ? LexKeywords.TO : LexKeywords.DOWNTO, false);

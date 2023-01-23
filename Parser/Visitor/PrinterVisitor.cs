@@ -61,14 +61,14 @@ public class PrinterVisitor : IVisitor
     {
         _depth++;
         Print(node.Op);
-        node.Node.Accept(this);
+        node.Operand.Accept(this);
         _depth--;
     }
     public void Visit(Parser.RecordAccess node)
     {
         _depth++;
         Print("record access");
-        node.RecordId.Accept(this);
+        node.RecordVarRef.Accept(this);
         node.Field.Accept(this);
         _depth--;
     }

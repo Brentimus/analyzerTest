@@ -8,34 +8,44 @@ public partial class Parser
 {
     public abstract class ExpressionNode : Node
     {
-        public SymType SymType { get; set; }
+        public ExpressionNode(Lex lex = null!) : base(lex)
+        {
+            LValue = true;
+        }
+
+        public SymType SymType { get; set; } = null!;
+        public bool LValue;
     }
 
     public abstract class VarRefNode : ExpressionNode
     {
+        public VarRefNode(Lex lex = null!) : base(lex)
+        {
+            LValue = true;
+        }
+        public bool LValue;
     }
 
     public class UnOpExpressionNode : ExpressionNode
     {
-        public UnOpExpressionNode(Lex op, ExpressionNode node)
+        public UnOpExpressionNode(Lex op, ExpressionNode operand) : base(op)
         {
             Op = op;
-            Node = node;
+            Operand = operand;
         }
 
         public Lex Op { get; }
 
-        public ExpressionNode Node { get; }
+        public ExpressionNode Operand { get; }
 
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
-
     public class BinOpExpressionNode : ExpressionNode
     {
-        public BinOpExpressionNode(Lex op, Node left, Node right)
+        public BinOpExpressionNode(Lex op, ExpressionNode left, ExpressionNode right) : base(op)
         {
             Op = op;
             Left = left;
@@ -43,19 +53,17 @@ public partial class Parser
         }
 
         public Lex Op { get; }
-
-        public Node Right { get; }
-        public Node Left { get; }
+        public ExpressionNode Right { get; }
+        public ExpressionNode Left { get; }
 
         public override void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
         }
     }
-
     public class RelOpExpressionNode : ExpressionNode
     {
-        public RelOpExpressionNode(Lex op, Node left, Node right)
+        public RelOpExpressionNode(Lex op, ExpressionNode left, ExpressionNode right) : base(op)
         {
             Op = op;
             Left = left;
@@ -64,8 +72,8 @@ public partial class Parser
 
         public Lex Op { get; }
 
-        public Node Right { get; }
-        public Node Left { get; }
+        public ExpressionNode Right { get; }
+        public ExpressionNode Left { get; }
 
         public override void Accept(IVisitor visitor)
         {
@@ -79,7 +87,6 @@ public partial class Parser
         {
             NewLine = newLine;
         }
-
         public bool NewLine { get; }
     }
 
@@ -95,7 +102,7 @@ public partial class Parser
 
     public class ArrayAccess : VarRefNode
     {
-        public ArrayAccess(VarRefNode arrayId, ExpressionNode arrayExp)
+        public ArrayAccess(VarRefNode arrayId, ExpressionNode arrayExp) : base(arrayId.LexCur)
         {
             ArrayId = arrayId;
             ArrayExp = arrayExp;
@@ -112,13 +119,13 @@ public partial class Parser
 
     public class RecordAccess : VarRefNode
     {
-        public RecordAccess(VarRefNode recordId, IdNode field)
+        public RecordAccess(VarRefNode recordVarRef, IdNode field) : base(recordVarRef.LexCur)
         {
-            RecordId = recordId;
+            RecordVarRef = recordVarRef;
             Field = field;
         }
 
-        public VarRefNode RecordId { get; }
+        public VarRefNode RecordVarRef { get; }
         public IdNode Field { get; }
 
         public override void Accept(IVisitor visitor)
@@ -129,7 +136,7 @@ public partial class Parser
 
     public class CallNode : VarRefNode
     {
-        public CallNode(VarRefNode name, List<ExpressionNode> args)
+        public CallNode(VarRefNode name, List<ExpressionNode> args) : base(name.LexCur)
         {
             Name = name;
             Args = args;
@@ -146,7 +153,7 @@ public partial class Parser
 
     public class IdNode : VarRefNode
     {
-        public IdNode(Lex lexCur)
+        public IdNode(Lex lexCur) : base(lexCur)
         {
             LexCur = lexCur;
         }
@@ -166,7 +173,7 @@ public partial class Parser
 
     public class BooleanNode : ExpressionNode
     {
-        public BooleanNode(Lex lexCur)
+        public BooleanNode(Lex lexCur) : base(lexCur)
         {
             LexCur = lexCur;
         }
@@ -181,7 +188,7 @@ public partial class Parser
 
     public class StringNode : ExpressionNode
     {
-        public StringNode(Lex lexeme)
+        public StringNode(Lex lexeme) : base(lexeme)
         {
             LexCur = lexeme;
         }
@@ -199,9 +206,9 @@ public partial class Parser
         }
     }
 
-    public class CharNode : ExpressionNode
+    public class CharNode : ExpressionNode 
     {
-        public CharNode(Lex lexeme)
+        public CharNode(Lex lexeme) : base(lexeme)
         {
             LexCur = lexeme;
         }
@@ -221,7 +228,7 @@ public partial class Parser
 
     public class NumberExpressionNode : ExpressionNode
     {
-        public NumberExpressionNode(Lex lexeme)
+        public NumberExpressionNode(Lex lexeme) : base(lexeme)
         {
             LexCur = lexeme;
         }

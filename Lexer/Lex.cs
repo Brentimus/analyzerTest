@@ -40,6 +40,10 @@ public class Lex
         if (LexType != LexType.Keyword) return false;
         return keys.Any(key =>  key == (LexKeywords) Enum.Parse(typeof(LexKeywords), Value.ToString()!));
     }
+    public bool Is(params LexType[] types)
+    {
+        return types.Any(type =>  type == LexType);
+    }
 
     public bool Is(LexType type)
     {

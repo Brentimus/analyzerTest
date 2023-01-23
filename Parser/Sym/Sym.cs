@@ -11,7 +11,7 @@ public abstract class Sym : Parser.IAcceptable
     {
         Name = name;
     }
-
+    
     public string Name { get; }
     public abstract void Accept(IVisitor visitor);
 
@@ -209,6 +209,7 @@ public class SymConstParam : SymParam
 public class SymRecord : SymType
 {
     public SymTable Fields { get; }
+    
 
     public SymRecord(SymTable fields) : base("record")
     {
@@ -346,16 +347,19 @@ public class SymFunction : SymProcedure
 public class SymTable : Parser.IAcceptable
 {
     public OrderedDictionary Data { get; }
+    public Parser.IdNode Duplicate { get; set; }
 
     public SymTable()
     {
         Data = new OrderedDictionary();
+        Duplicate = null;
     }
 
     public void Push(Parser.IdNode id, Sym sym, bool is_parser = false)
     {
         if (is_parser && Contains(sym.Name))
         {
+            Duplicate = id;
             return;
         }
 
@@ -491,13 +495,13 @@ public class SymStack
         Data[^1].Push(id, sym);
     }
 
-    public Sym? Get(string name)
+    public Sym? Get(Lex lex, string name)
     {
         for (var i = Data.Count - 1; i >= 0; i--)
             if (Data[i].Contains(name))
                 return Data[i].Get(name);
 
-        throw new Exception();
+        throw new SemanticException(lex.Pos, $"not found '{name}'");
     }
 
     public void Pop()
