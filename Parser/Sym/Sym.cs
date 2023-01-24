@@ -1,6 +1,6 @@
 using System.Collections.Specialized;
-using Parser.Visitor;
 using Lexer;
+using Parser.Visitor;
 
 namespace Parser.Sym;
 
@@ -10,7 +10,7 @@ public abstract class Sym : Parser.IAcceptable
     {
         Name = name;
     }
-    
+
     public string Name { get; set; }
     public abstract void Accept(IVisitor visitor);
 
@@ -25,10 +25,12 @@ public class SymProgramName : SymType
     public SymProgramName(string name) : base(name)
     {
     }
+
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
     }
+
     public override string ToString()
     {
         return "program name";
@@ -222,6 +224,7 @@ public class SymConstParam : SymParam
     }
 
     public Parser.IdNode Id { get; }
+
     public override string ToString()
     {
         return "const param";
@@ -231,7 +234,7 @@ public class SymConstParam : SymParam
 public class SymRecord : SymType
 {
     public SymTable Fields { get; }
-    
+
 
     public SymRecord(SymTable fields) : base("record")
     {
@@ -240,26 +243,17 @@ public class SymRecord : SymType
 
     public override bool Is(SymType other)
     {
-        if (other is not SymRecord)
-        {
-            return false;
-        }
+        if (other is not SymRecord) return false;
 
         var otherCasted = other as SymRecord;
         foreach (string field in Fields.Data.Keys)
         {
             var sym = Fields.Get(field) as SymVar;
-            if (!otherCasted!.Fields.Contains(sym!.Name))
-            {
-                return false;
-            }
+            if (!otherCasted!.Fields.Contains(sym!.Name)) return false;
 
             var otherSym = otherCasted.Fields.Get(sym.Name) as SymVar;
 
-            if (!sym.Type.Is(otherSym!.Type))
-            {
-                return false;
-            }
+            if (!sym.Type.Is(otherSym!.Type)) return false;
         }
 
         return true;
@@ -289,7 +283,8 @@ public class SymArray : SymType
 
     public override bool Is(SymType other)
     {
-        return other is SymArray && Type.Is((other as SymArray)!.Type);
+        var array = other as SymArray;
+        return array != null && Type.Is(array.Type);
     }
 
     public override void Accept(IVisitor visitor)
@@ -311,6 +306,7 @@ public class SymParam : SymVar
     }
 
     public Parser.IdNode Id;
+
     public override void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
@@ -375,31 +371,28 @@ public class SymTable : Parser.IAcceptable
     public SymTable()
     {
         Data = new OrderedDictionary();
-        Duplicate = null;
+        Duplicate = null!;
     }
 
-    public void Push(Parser.IdNode id, Sym sym, bool is_parser = false)
+    public void Push(Parser.IdNode id, Sym sym, bool isParser = false)
     {
-        if (is_parser && Contains(sym.Name))
+        if (isParser && Contains(sym.Name))
         {
             Duplicate = id;
             return;
         }
 
-        if (Contains(sym.Name))
-        {
-            throw new SemanticException(id.LexCur.Pos, $"Duplicate identifier '{sym.Name}'");
-        }
+        if (Contains(sym.Name)) throw new SemanticException(id.LexCur.Pos, $"Duplicate identifier '{sym.Name}'");
 
         Data.Add(sym.Name, sym);
     }
 
-    public void Border(String[] texts, int wight)
+    public void Border(string[] texts, int wight)
     {
-        string textInString = "";
+        var textInString = "";
         foreach (var text in texts)
         {
-            int space = text.Length > (wight / 4) ? 0 : (wight / 4) - text.Length;
+            var space = text.Length > wight / 4 ? 0 : wight / 4 - text.Length;
 
             textInString += " │ " + text + " ".PadRight(space);
         }
@@ -411,37 +404,29 @@ public class SymTable : Parser.IAcceptable
     public void Print(SymTable table, SymStack stack)
     {
         Console.WriteLine();
-        int wight = 100;
+        const int wight = 100;
         Console.WriteLine(" " + new string('─', wight - 1));
         foreach (var key in table.Data.Keys)
         {
-            string value = "no return type";
-            var programName = (table.Data[key] as SymProgramName);
+            var value = "no return type";
+            var programName = table.Data[key] as SymProgramName;
             var call = table.Data[key] as SymFunction is null
                 ? table.Data[key] as SymProcedure
                 : table.Data[key] as SymFunction;
             if (call is not null)
             {
                 stack.Push(call.Locals);
-                if (call is SymFunction)
-                {
-                    value = (call as SymFunction).ReturnType.Name;
-                    
-                }
+                if (call is SymFunction) value = (call as SymFunction).ReturnType.Name;
             }
+
             if (programName is null)
-            {
                 if (call is null)
-                {
                     value = table.Data[key] as SymVar is null
-                        ? (table.Data[key] as SymType).ResolveAlias().Name
-                        : (table.Data[key] as SymVar).Type.ResolveAlias().Name;
-                }
-            }
-            if (value is null)
-            {
-                value = "no return type";
-            }
+                        ? ((table.Data[key] as SymType)!).ResolveAlias().Name
+                        : ((table.Data[key] as SymVar)!).Type.ResolveAlias().Name;
+
+            if (value is null) value = "no return type";
+
             string[] data = {key.ToString(), table.Data[key].ToString(), value};
             Border(data, wight);
         }
@@ -449,22 +434,16 @@ public class SymTable : Parser.IAcceptable
         Console.WriteLine(" " + new string('─', wight - 1));
     }
 
-    public void Push(String name, Sym sym)
+    public void Push(string name, Sym sym)
     {
-        if (Contains(name))
-        {
-            throw new Exception();
-        }
+        if (Contains(name)) throw new Exception();
 
         Data.Add(name, sym);
     }
 
     public Sym? Get(string name)
     {
-        if (Data.Contains(name))
-        {
-            return (Sym) Data[name]!;
-        }
+        if (Data.Contains(name)) return (Sym) Data[name]!;
 
         return null;
     }
@@ -474,7 +453,7 @@ public class SymTable : Parser.IAcceptable
         Data.Remove(name);
     }
 
-    public bool Contains(String name)
+    public bool Contains(string name)
     {
         return Data.Contains(name);
     }
@@ -493,20 +472,6 @@ public class SymTable : Parser.IAcceptable
         visitor.Visit(this);
     }
 }
-/*
- * var b: integer; // stack.Push(sym);
- * function a(b: integer; d: double): integer; ...
- * begin end.
- */
-
-/*
- * stack:
- *      integer
- *      double
- *      a
- *          b
- *          d
- */
 
 public class SymStack
 {
@@ -536,7 +501,6 @@ public class SymStack
 
     public void Push(Parser.IdNode id, Sym sym)
     {
-        
         Data[^1].Push(id, sym);
     }
 
@@ -555,10 +519,8 @@ public class SymStack
 
     public void Print(SymStack stack)
     {
-        for (int i = 0; i < stack.Data.Count; ++i)
-        {
+        for (var i = 0; i < stack.Data.Count; ++i)
             if (stack.Data[i].Data.Count != 0)
                 stack.Data[i].Print(stack.Data[i], stack);
-        }
     }
 }

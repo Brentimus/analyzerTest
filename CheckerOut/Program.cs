@@ -107,15 +107,15 @@ internal class Program
         {
             var sw = new StringWriter();
             Console.SetOut(sw);
+            
             var programNode = parser.Program();
-            
-            SymStack _symStack = new SymStack();
-            SymVisitor symVisitor = new SymVisitor(_symStack);
-            symVisitor.Visit(programNode);
-            
+            SymStack symStack = new SymStack();
+            SymVisitor visitorSym = new SymVisitor(symStack);
+            visitorSym.Visit(programNode);
+                
             IVisitor visitor = new PrinterVisitor();
             visitor.Visit(programNode);
-            _symStack.Print(_symStack);
+            symStack.Print(symStack);
             
             Console.SetOut(oldOut);
             var found = sw.ToString();
@@ -265,23 +265,78 @@ internal class Program
             }
         }
     }
+    
+    public static void MakeOutTestSemantic()
+    {
+        var files = Directory.GetFiles($"../../../../Tests/Semantic/", "*.in", SearchOption.AllDirectories)
+            .Select(f => f[..^3]).ToList();
+        foreach (var nameFile in files)
+        {
+            var path = $"{nameFile}.out";
+            try
+            {
+                // Create the file, or overwrite if the file exists.
+                using (FileStream fs = File.Create(path))
+                {
+                    var fileReaderIn = new StreamReader($"{nameFile}.in");
+                    var parser = new Parser.Parser(fileReaderIn);
+                    string text ="";
+                    
+                    var oldOut = Console.Out;
+                    try
+                    {
+                        var sw = new StringWriter();
+                        Console.SetOut(sw);
+                        
+                        var programNode = parser.Program();
+                        SymStack symStack = new SymStack();
+                        SymVisitor visitorSym = new SymVisitor(symStack);
+                        visitorSym.Visit(programNode);
+                
+                        IVisitor visitor = new PrinterVisitor();
+                        visitor.Visit(programNode);
+                        symStack.Print(symStack);
+                        
+                        Console.SetOut(oldOut);
+                        var found = sw.ToString();
+                        text += found;
+                    }
+                    catch (SemanticException e)
+                    {
+                        Console.SetOut(oldOut);
+                        var found = e.Message;
+                        text += found;
+                    }
+                    byte[] info = new UTF8Encoding(true).GetBytes(text);
+                    // Add some information to the file.
+                    fs.Write(info, 0, info.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+    }
+    
     public static void StartTest(string program)
     {
-        var files = Directory.GetFiles($"../../../../Tests/{program}/", "*.in")
-            .Select(f => Path.GetFileName(f)[..^3]).ToList();
+        var files = Directory.GetFiles($"../../../../Tests/{program}/", "*.in", SearchOption.AllDirectories)
+            .Select(f => f[..^3]).ToList();
+
 
         Console.WriteLine($"{program} Test:");
         foreach (var file in files)
         {
             var check = false;
             if (program == "Lexer")
-                check = Lexer($"../../../../Tests/{program}/" + file);
+                check = Lexer(file);
             else if (program == "SimpleParser")
-                check = SimpleParser($"../../../../Tests/{program}/" + file);
+                check = SimpleParser(file);
             else if (program == "Parser")
-                check = Parser($"../../../../Tests/{program}/" + file);
+                check = Parser(file);
             else if (program == "Semantic")
-                check = Semantic($"../../../../Tests/{program}/" + file);
+                check = Semantic(file);
             
             if (check) total++;
         }
@@ -289,7 +344,7 @@ internal class Program
     private static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-        //MakeOutTestParser();
+        //MakeOutTestSemantic();
         StartTest("Lexer");
         StartTest("SimpleParser");
         StartTest("Parser");
