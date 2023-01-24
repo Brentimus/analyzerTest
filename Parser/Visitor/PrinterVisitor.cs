@@ -56,10 +56,10 @@ public class PrinterVisitor : IVisitor
         Print(node.LexCur);
         _depth--;
     }
-    
-    public void Visit(SymProgramName node)
-    { }
 
+    public void Visit(Parser.CastNode node)
+    { }
+    
     public void Visit(Parser.UnOpExpressionNode node)
     {
         _depth++;

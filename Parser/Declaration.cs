@@ -38,7 +38,7 @@ public partial class Parser
 
         public List<IdNode> Names { get; }
         public List<SymVar> SymVars { get; }
-        public ExpressionNode? Exp { get; }
+        public ExpressionNode? Exp { get; set; }
 
         public override void Accept(IVisitor visitor)
         {
@@ -87,7 +87,7 @@ public partial class Parser
 
         public IdNode Name { get; }
         public SymConst SymConst { get; }
-        public ExpressionNode Exp { get; }
+        public ExpressionNode Exp { get; set; }
 
         public override void Accept(IVisitor visitor)
         {

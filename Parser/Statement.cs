@@ -93,9 +93,9 @@ public partial class Parser
             Op = op;
         }
 
-        public ExpressionNode VarRef { get; }
+        public ExpressionNode VarRef { get; set; }
         public Lex Op { get; }
-        public ExpressionNode Exp { get; }
+        public ExpressionNode Exp { get; set; }
 
         public override void Accept(IVisitor visitor)
         {
@@ -129,7 +129,7 @@ public partial class Parser
     public StatementNode SimpleStatement()
     {
         var left = Expression();
-        if (left is CallNode callNode) return new FunctionCallStatementNode(callNode);
+        
         if (left is VarRefNode)
         {
             Lex op;
@@ -139,6 +139,7 @@ public partial class Parser
                 op = _curLex;
                 Eat();
             }
+            else if (left is CallNode callNode) return new FunctionCallStatementNode(callNode);
             else
             {
                 throw new SyntaxException(_curLex.Pos, "Illegal expression");
@@ -147,7 +148,7 @@ public partial class Parser
             var exp = Expression();
             return new AssignmentStatementNode(left, op, exp);
         }
-
+        
         throw new SyntaxException(_curLex.Pos, "Illegal statement");
     }
 

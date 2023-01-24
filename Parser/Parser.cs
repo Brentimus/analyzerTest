@@ -21,14 +21,12 @@ public partial class Parser : Buffer
 
     public abstract class Node : IAcceptable
     {
-        public Node(Lex? lex = null) => LexCur = lex;
-        public Lex? LexCur { get; }
         public abstract void Accept(IVisitor visitor);
     }
 
     public class KeywordNode : Node
     {
-        public KeywordNode(Lex lexCur) : base(lexCur)
+        public KeywordNode(Lex lexCur)
         {
             LexCur = lexCur;
         }

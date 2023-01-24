@@ -8,21 +8,24 @@ public partial class Parser
 {
     public abstract class ExpressionNode : Node
     {
-        public ExpressionNode(Lex lex = null!) : base(lex)
+        public ExpressionNode(Lex lexCur)
         {
+            LexCur = lexCur;
             LValue = true;
         }
-
+        public Lex LexCur { get; }
         public SymType SymType { get; set; } = null!;
         public bool LValue { get; set; }
     }
 
     public abstract class VarRefNode : ExpressionNode
     {
-        public VarRefNode(Lex lex = null!) : base(lex)
+        public VarRefNode(Lex lexCur) : base(lexCur)
         {
+            LexCur = lexCur;
             LValue = true;
         }
+        public Lex LexCur { get; }
         public bool LValue { get; set; }
     }
 
@@ -133,6 +136,19 @@ public partial class Parser
             visitor.Visit(this);
         }
     }
+    public class CastNode : ExpressionNode
+    {
+        public CastNode(ExpressionNode exp, SymType symType) : base(exp.LexCur)
+        {
+            SymType = symType;
+            LValue = exp.LValue;
+        }
+
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+    }
 
     public class CallNode : VarRefNode
     {
@@ -188,9 +204,9 @@ public partial class Parser
 
     public class StringNode : ExpressionNode
     {
-        public StringNode(Lex lexeme) : base(lexeme)
+        public StringNode(Lex lexCur) : base(lexCur)
         {
-            LexCur = lexeme;
+            LexCur = lexCur;
         }
 
         public Lex LexCur { get; }
@@ -208,9 +224,9 @@ public partial class Parser
 
     public class CharNode : ExpressionNode 
     {
-        public CharNode(Lex lexeme) : base(lexeme)
+        public CharNode(Lex lexCur) : base(lexCur)
         {
-            LexCur = lexeme;
+            LexCur = lexCur;
         }
 
         public Lex LexCur { get; }
@@ -228,9 +244,9 @@ public partial class Parser
 
     public class NumberExpressionNode : ExpressionNode
     {
-        public NumberExpressionNode(Lex lexeme) : base(lexeme)
+        public NumberExpressionNode(Lex lexCur) : base(lexCur)
         {
-            LexCur = lexeme;
+            LexCur = lexCur;
         }
 
         public override string ToString()

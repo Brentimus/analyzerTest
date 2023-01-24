@@ -49,4 +49,5 @@ public interface IVisitor
     void Visit(Parser.ParamSelectionNode node);
     void Visit(Parser.RelOpExpressionNode node);
     void Visit(Parser.CharNode node);
+    void Visit(Parser.CastNode node);
 }

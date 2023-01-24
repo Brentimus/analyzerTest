@@ -11,7 +11,7 @@ public abstract class Sym : Parser.IAcceptable
         Name = name;
     }
     
-    public string Name { get; }
+    public string Name { get; set; }
     public abstract void Accept(IVisitor visitor);
 
     public override string ToString()
@@ -155,8 +155,11 @@ public class SymVar : Sym
 
     public SymVar(Parser.IdNode id, SymType type) : base(id.ToString())
     {
+        Id = id;
         Type = type;
     }
+
+    public Parser.IdNode Id { get; }
 
     public override void Accept(IVisitor visitor)
     {
@@ -326,14 +329,11 @@ public class SymProcedure : Sym
         Id = id;
         Locals = locals;
         Block = block;
-        IsForward = true;
     }
 
     public Parser.IdNode Id { get; }
     public SymTable Locals { get; }
     public Parser.BlockNode Block { get; }
-    public bool IsForward { get; }
-
 
     public override void Accept(IVisitor visitor)
     {
@@ -408,18 +408,27 @@ public class SymTable : Parser.IAcceptable
         Console.WriteLine(new string(' ', wight - 1 - textInString.Length) + "│");
     }
 
-    public void Print(SymTable table)
+    public void Print(SymTable table, SymStack stack)
     {
         Console.WriteLine();
         int wight = 100;
         Console.WriteLine(" " + new string('─', wight - 1));
         foreach (var key in table.Data.Keys)
         {
-            string value = "";
+            string value = "no return type";
             var programName = (table.Data[key] as SymProgramName);
             var call = table.Data[key] as SymFunction is null
                 ? table.Data[key] as SymProcedure
                 : table.Data[key] as SymFunction;
+            if (call is not null)
+            {
+                stack.Push(call.Locals);
+                if (call is SymFunction)
+                {
+                    value = (call as SymFunction).ReturnType.Name;
+                    
+                }
+            }
             if (programName is null)
             {
                 if (call is null)
@@ -431,7 +440,7 @@ public class SymTable : Parser.IAcceptable
             }
             if (value is null)
             {
-                value = "";
+                value = "no return type";
             }
             string[] data = {key.ToString(), table.Data[key].ToString(), value};
             Border(data, wight);
@@ -502,12 +511,10 @@ public class SymTable : Parser.IAcceptable
 public class SymStack
 {
     public List<SymTable> Data { get; }
-    public List<SymTable> CallData { get; }
 
     public SymStack()
     {
         Data = new List<SymTable>();
-        CallData = new List<SymTable>();
     }
 
     public void Push(SymTable data)
@@ -529,6 +536,7 @@ public class SymStack
 
     public void Push(Parser.IdNode id, Sym sym)
     {
+        
         Data[^1].Push(id, sym);
     }
 
@@ -542,20 +550,15 @@ public class SymStack
 
     public void Pop()
     {
-        CallData.Add(Data[^1]);
         Data.Remove(Data[^1]);
     }
 
     public void Print(SymStack stack)
     {
-        foreach (var data in stack.Data.Where(data => data.Data.Count != 0))
+        for (int i = 0; i < stack.Data.Count; ++i)
         {
-            data.Print(data);
-        }
-
-        foreach (var data in CallData.Where(data => data.Data.Count != 0))
-        {
-            data.Print(data);
+            if (stack.Data[i].Data.Count != 0)
+                stack.Data[i].Print(stack.Data[i], stack);
         }
     }
 }
