@@ -1,69 +1,65 @@
-// bnf rules:
-# 1.     [X]    -- zero or one entry of X
-# 2.     {X}    -- zero and more entries of X
-# 3.    (X|Y)   -- group: or X, or Y
-# 4.    (X Y)   -- group: X Y
-# 5.    "XYZ"   -- terminal sign XYZ
+<<bnf rules>>
+[X]    -- zero or one entry of X
+{X}    -- zero and more entries of X
+(X|Y)   -- group: or X, or Y
+(X Y)   -- group: X Y
+"XYZ"   -- terminal sign XYZ
 
-// program
-<program> ::= ["program" <id> ";"] {<declarations>} <compound_statement>
+<<program>>
+<program> ::= ["program" <id> ";"] <block>
+<block> ::= {<declarations>} <compoundStatement>
 
-// declarations
-<declarations> ::= <const_declaration> | <var_declaration> | <type_declaration> | <function_declaration> |
-										  <procedure_declaration>
-<const_declaration> ::= "const" <one_const_declaration> {<one_const_declaration>}
-<one_const_declaration> ::= <id> [":" <type>] "=" <exp> ";"
+<<declarations>>
+<declarations> ::= <constDeclarations> | <varDeclarations> | <typeDeclarations> | <functionDeclaration> | <procedureDeclaration>
+<varDeclarations> ::= "var" <varDeclaration> {<varDeclaration>}
+<varDeclaration> ::= <id> {"," <id>} ":" <type> ";" | <id> ":" <type> [ "=" <exp> ] ";"
 
-<var_declaration> ::= "var" <one_var_declaration> {<one_var_declaration>}
-<one_var_declaration> ::= <id> {"," <id>} ":" <type> ";" | <id> ":" <type> [ "=" <exp> ] ";"
+<constDeclarations> ::= "const" <oneConstDeclaration> {<oneConstDeclaration>}
+<constDeclaration> ::= <id> [":" <type>] "=" <exp> ";"
 
-<type_declaration> ::= "type" <one_type_declaration> {<one_type_declaration>}
-<one_type_declaration> ::= <id> "=" <type> ";"
+<typeDeclarations> ::= "type" <typeDeclaration> {<typeDeclaration>}
+<typeDeclaration> ::= <id> "=" <type> ";"
 
-<function_declaration> ::= <function_header> {<const_declaration> | <var_declaration> | <type_declaration>} <compound_statement> ";"
-<function_header> ::= "function" <id> "(" <parameters> ")" ":" <type> ";"
+<functionDeclaration> ::= "function" <id> "(" <parameters> ")" ":" <type> ";" {<constDeclarations> | <varDeclarations> | <typeDeclarations>} <compoundStatement> ";"
 
-<procedure_declaration> ::= <procedure_header> {<const_declaration> | <var_declaration> | <type_declaration>} <compound_statement> ";"
-<procedure_header> ::= "procedure" <id> "(" <parameters> ")" ";"
+<procedureDeclaration> ::= "procedure" <id> "(" <parameters> ")" ";" {<constDeclarations> | <varDeclarations> | <typeDeclarations>} <compoundStatement> ";"
 
 <parameters> ::= <parameter> {";" <parameter>}
-<parameter> ::= ["var" | "const"] <id_list> ":" <type>
+<parameter> ::= ["var" | "const"] <idList> ":" <type>
 
-// statements
-<statement_sequence> ::= {";"} <statement> {";" <statement>} {";"}
-<statement> ::= <structured_statement> | <simple_statement>
+<<statements>>
+<statementSequence> ::= {";"} <statement> {";" <statement>} {";"}
+<statement> ::= <simpleStatement> | <structuredStatement>
+<simpleStatement> ::= <assignmentStatement> | <functionCallStatement>
+<functionCallStatement> ::= <id> ["(" <idList> ")"]
+<structuredStatement> ::= <compoundStatement> | <forStatement> | <whileStatement> | <ifStatement>
+<compoundStatement> ::= "begin" <statementSequence> "end"
+<assignmentStatement> ::= <varRef> (":=" | "+=" | "-=" | "*=" | "/=") <expression>
 
-<simple_statement> ::= <assignment_statement> | <function_call_statement>
-<function_call_statement> ::= <id> ["(" <id_list> ")"]
-<structured_statement> ::= <compound_statement> | <for_statement> | <while_statement> | <if_statement>
+<whileStatement> ::= "while" <expression> "do" <statement>
+<forStatement> ::= "for" <id> ":=" <expression> ("to" | "downto") <expression> "do" <statement>
+<ifStatement> ::= "if" <expression> "then" <statement> ["else" <statement>]
 
-<compound_statement> ::= "begin" <statement_sequence> "end"
-<assignment_statement> ::= <var_ref> (":=" | "+=" | "-=" | "*=" | "/=") <expression>
-<while_statement> ::= "while" <expression> "do" <statement>
-<for_statement> ::= "for" <id> ":=" <expression> ("to" | "downto") <expression> "do" <statement>
-<if_statement> ::= "if" <expression> "then" <statement> ["else" <statement>]
+<<expressions>>
+<expression> ::= <simpleExpression> {("=" | "<" | "<>" | "<=" | ">" | ">=") <simpleExpression>}
+<simpleExpression> ::= <term> {("+" | "-" | "or" | "xor") <term>}
+<term> ::= <simpleTerm> {("*" | "/" | "div" | "mod" | "and" | "shr" | "shl") <simpleTerm>}
+<simpleTerm> ::= {"+" | "-" | "not" | "or"} <factor>
+<factor> ::= "(" <expression> ")" | <string> | <number> | <boolean> | <varRef>
+<varRef> ::= <id> { <arrayAccess> | <recordAccess> | <functionCall> }
+<arrayAccess> ::= "[" <expressionList> "]"
+<recordAccess> ::= "." <id>
+<functionCall> ::= <id> "(" [ <expressionList> ] ")"
 
-// expressions
-<expression> ::= <simple_expression> {("=" | "<" | "<>" | "<=" | ">" | ">=") <simple_expression>}
-<simple_expression> ::= <term> {("+" | "-" | "or" | "xor") <term>}
-<term> ::= <simple_term> {("*" | "/" | "div" | "mod" | "and" | "shr" | "shl") <simple_term>}
-<simple_term> ::= {"+" | "-" | "not" | "or"} <factor>
-<factor> ::= "(" <expression> ")" | <string> | <number> | <boolean> | <var_ref>
-<var_ref> ::= <id> { <array_access> | <record_access> | <function_call> }
-<array_access> ::= "[" <expression_list> "]"
-<record_access> ::= "." <id>
-<function_call> ::= <id> "(" [ <expression_list> ] ")"
-
-// types
-<type> ::=  <primitive_type> | <array_type> | <record_type>
-<primitive_type> ::= <id> | "string"
-<array_type> ::= "array" "[" <ranges> "]" "of" <type>
+<<type>>
+<type> ::=  <primitiveType> | <arrayType> | <recordType>
+<primitiveType> ::= <id> | "string"
+<arrayType> ::= "array" "[" <ranges> "]" "of" <type>
 <ranges> ::= <range> {"," <range>}
 <range> ::= <expression> ".." <expression>
-<record_type> ::= "record" [ <fields_list> ] "end"
-<fields_list> ::= <field_section> {";" <field_section>}
-<field_section> ::= <id_list> ":" <type>
+<recordType> ::= "record" [ <fieldsList> ] "end"
+<fieldsList> ::= <fieldSection> {";" <fieldSection>}
+<fieldSection> ::= <idList> ":" <type>
 
-// utils
-<expression_list> ::= <expression> {"," <expression>}
-<id_list> ::= <id> {"," <id>}
+<expressionList> ::= <expression> {"," <expression>}
+<idList> ::= <id> {"," <id>}
